@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "stdlib.h": "c",
+        "country_struct.h": "c",
+        "work_table.h": "c"
+    }
+}

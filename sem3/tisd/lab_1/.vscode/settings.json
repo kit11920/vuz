@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "input_output.h": "c",
+        "errs.h": "c"
+    }
+}
