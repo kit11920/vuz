@@ -1,12 +1,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
 #include "arr.h"
 #include "list.h"
 #include "errs.h"
 #include "time_system.h"
 #include "interface.h"
+#include "efficiency.h"
 
 
 int main(void)
@@ -49,6 +49,8 @@ int main(void)
         {
             rc = change_time_params(&tp);
         }
+        else if (act == ACT_EFFICIENCY)
+            rc = make_compare_table();
 
         if (rc != OK)
         {

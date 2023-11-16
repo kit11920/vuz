@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <math.h>
 
 #include "list.h"
 #include "errs.h"
@@ -16,6 +17,34 @@ void init_list_queue(list_queue_t *queue)
     queue->pin = NULL;
     queue->len = 0;
     queue->last_time_pushed = 0.0;
+}
+
+int just_push_list_queue(list_queue_t *queue, double req_time)
+{
+    // Проверка переполнения
+    if (queue->len == MAX_LEN_LIST_QUEUE)
+        return ERR_RANGE_LONG;
+    //
+
+    // Выделяем память под новый узел
+    node_t *tmp = malloc(sizeof(node_t));
+    if (tmp == NULL)
+        return ERR_MEM;
+    tmp->time = req_time;
+    tmp->next = NULL;
+    //
+
+    // Изменяем указатель pin
+    if (queue->pin != NULL)
+        queue->pin->next = tmp;
+    else
+        queue->pout = tmp;
+    queue->pin = tmp;
+    //
+
+    queue->len++;
+
+    return OK;
 }
 
 int push_list_queue(list_queue_t *queue, double req_time, free_adresses_t *arr)
@@ -156,20 +185,33 @@ int process_list_queue(time_params_t *tp)
         if (PRINT)
             printf("time_now: %lf\n", time_now);
         _Bool good_range_time = 1;
-        while (queue1.len == 0 || good_range_time)
+        while ((good_range_time && queue1.last_time_pushed < time_now) || fabs(queue1.last_time_pushed) < EPS)
         {
             double time = receive_time_1(tp) + queue1.last_time_pushed;
-            if (queue1.len == 0 || time <= time_now)
-            {
-                rc = push_list_queue(&queue1, time, &arr);
-                if (rc != OK)
-                    return rc;
-                count_prcs1_in++;
-                queue1.last_time_pushed = time;
-            }
-            else
+            
+            rc = push_list_queue(&queue1, time, &arr);
+            if (rc != OK)
+                return rc;
+            count_prcs1_in++;
+            queue1.last_time_pushed = time;
+            
+            if (time_now < time)
                 good_range_time = 0;
         }
+        // while (queue1.len == 0 || good_range_time)
+        // {
+        //     double time = receive_time_1(tp) + queue1.last_time_pushed;
+        //     if (queue1.len == 0 || time <= time_now)
+        //     {
+        //         rc = push_list_queue(&queue1, time, &arr);
+        //         if (rc != OK)
+        //             return rc;
+        //         count_prcs1_in++;
+        //         queue1.last_time_pushed = time;
+        //     }
+        //     else
+        //         good_range_time = 0;
+        // }
         if (PRINT)
         {
             printf("1 ");
@@ -177,20 +219,36 @@ int process_list_queue(time_params_t *tp)
         }
 
         good_range_time = 1;
-        while (queue2.len == 0 || good_range_time)
+        while ((good_range_time && queue2.last_time_pushed < time_now) || fabs(queue2.last_time_pushed) < EPS)
         {
-            double time = receive_time_2(tp) + queue2.last_time_pushed;
-            if (queue2.len == 0 || time <= time_now)
-            {
-                rc = push_list_queue(&queue2, time, &arr);
-                if (rc != OK)
-                    return rc;
-                count_prcs2_in++;
-                queue2.last_time_pushed = time;
-            }
-            else
+            double receive2 = receive_time_2(tp);
+            // time2 += receive2;
+            // count_time2++;
+            double time = receive2 + queue2.last_time_pushed;
+
+            rc = push_list_queue(&queue2, time, &arr);
+            if (rc != OK)
+                return rc;
+            count_prcs2_in++;
+            queue2.last_time_pushed = time;
+
+            if (time_now < time)
                 good_range_time = 0;
         }
+        // while (queue2.len == 0 || good_range_time)
+        // {
+        //     double time = receive_time_2(tp) + queue2.last_time_pushed;
+        //     if (queue2.len == 0 || time <= time_now)
+        //     {
+        //         rc = push_list_queue(&queue2, time, &arr);
+        //         if (rc != OK)
+        //             return rc;
+        //         count_prcs2_in++;
+        //         queue2.last_time_pushed = time;
+        //     }
+        //     else
+        //         good_range_time = 0;
+        // }
         if (PRINT)
         {
             printf("2 ");

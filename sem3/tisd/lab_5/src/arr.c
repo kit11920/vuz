@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <math.h>
 
 #include "arr.h"
 #include "errs.h"
@@ -88,13 +89,19 @@ int process_arr_queue(time_params_t *tp)
     init_arr_queue(&queue2);
 
     double time_now = 0.0;
-    int count_prcs1_in = 0, count_prcs2_in = 0;
+    int count_prcs1_in = 0;
+    int count_prcs2_in = 0;
     int count_prcs1_out = 0, count_prcs2_out = 0;
     size_t sum_len_queue1 = 0, sum_len_queue2 = 0;
     double mid_len_queue1, mid_len_queue2;
     double sum_time_in_queue1 = 0.0, sum_time_in_queue2 = 0.0;
     double real_non_work_time = 0, real_work_time = 0;
     int count_info_printed = 0;
+
+    // tmp
+    // double time2 = 0;
+    // int count_time2 = 0;
+    //
 
     srand(time(NULL));
     while (count_prcs1_out < 1000)
@@ -104,18 +111,17 @@ int process_arr_queue(time_params_t *tp)
         if (PRINT)
             printf("time_now: %lf\n", time_now);
         _Bool good_range_time = 1;
-        while (queue1.len_arr == 0 || good_range_time)
+        while ((good_range_time && queue1.last_time_pushed < time_now) || fabs(queue1.last_time_pushed) < EPS)
         {
             double time = receive_time_1(tp) + queue1.last_time_pushed;
-            if (queue1.len_arr == 0 || time <= time_now)
-            {
-                rc = push_arr_queue(&queue1, time);
-                if (rc != OK)
-                    return rc;
-                count_prcs1_in++;
-                queue1.last_time_pushed = time;
-            }
-            else
+            
+            rc = push_arr_queue(&queue1, time);
+            if (rc != OK)
+                return rc;
+            count_prcs1_in++;
+            queue1.last_time_pushed = time;
+            
+            if (time_now < time)
                 good_range_time = 0;
         }
         if (PRINT)
@@ -125,28 +131,44 @@ int process_arr_queue(time_params_t *tp)
         }
 
         good_range_time = 1;
-        while (queue2.len_arr == 0 || good_range_time)
+        while ((good_range_time && queue2.last_time_pushed < time_now) || fabs(queue2.last_time_pushed) < EPS)
         {
-            double time = receive_time_2(tp) + queue2.last_time_pushed;
-            if (queue2.len_arr == 0 || time <= time_now)
-            {
-                rc = push_arr_queue(&queue2, time);
-                if (rc != OK)
-                    return rc;
-                count_prcs2_in++;
-                queue2.last_time_pushed = time;
-            }
-            else
+            double receive2 = receive_time_2(tp);
+            // time2 += receive2;
+            // count_time2++;
+            double time = receive2 + queue2.last_time_pushed;
+
+            rc = push_arr_queue(&queue2, time);
+            if (rc != OK)
+                return rc;
+            count_prcs2_in++;
+            queue2.last_time_pushed = time;
+
+            if (time_now < time)
                 good_range_time = 0;
+
+            // if (queue1.len_arr == 0 || time_now >= time)
+            // {
+            //     rc = push_arr_queue(&queue2, time);
+            //     if (rc != OK)
+            //         return rc;
+            //     count_prcs2_in++;
+            //     queue2.last_time_pushed = time;
+            //     // printf("len - %zu\n", queue2.len_arr);
+            //     // printf("time_now - %lf time_add2 - %lf, receive_t - %lf, num - %d\n", time_now, time, receive2, count_prcs2_in);
+            // }
+            // else
+            //     good_range_time = 0;
         }
         if (PRINT)
         {
             printf("2 ");
             print_arr_queue(&queue2);
+            printf("last time - %lf\n", queue2.last_time_pushed);
         }
         //
 
-        if (*queue1.pout > time_now && *queue2.pout < *queue1.pout)
+        if (queue2.len_arr != 0 && *queue1.pout > time_now && *queue2.pout < *queue1.pout)
         {
             double time, process_time;
 
@@ -174,7 +196,7 @@ int process_arr_queue(time_params_t *tp)
             //
             count_prcs2_out++;
         }
-        else
+        else if (queue1.len_arr != 0)
         {
             double time, process_time;
 
@@ -312,8 +334,12 @@ int process_arr_queue(time_params_t *tp)
     // printf("Расчитанное время простоя: %lf\n", non_work_calc);
     printf("Время простоя:    %lf\n", real_non_work_time);
     printf("\n");
+
+    // printf("time2: %lf\n", time2);
+    // printf("mid_time2_receive: %lf\n", time2 / count_time2);
+    // printf("sum2: %lf\n", time2);
     
-    print_mid_koef();
+    // print_mid_koef();
     return OK;
 }
 

@@ -104,7 +104,8 @@ double receive_time_1(time_params_t *tp)
     double min = tp->t1_min, max = tp->t1_max;
     if (fabs(tp->t1_max - tp->t1_min) < EPS)
         return tp->t1_max;
-    srand(rand());
+    // 
+    
     double t = (double) rand() / RAND_MAX;
     if (PRINT)
     {
@@ -119,22 +120,28 @@ double receive_time_1(time_params_t *tp)
     return (max - min) * t + min;
 }
 
+double sum_time2 = 0;
+int count_time2 = 0;
+double sum_out_time2 = 0.0;
+
 double receive_time_2(time_params_t *tp)
 {
     double min = tp->t2_min, max = tp->t2_max;
-    if (fabs(tp->t2_max - tp->t2_min) < EPS)
-        return tp->t2_max;
-    srand(rand());
+    // if (fabs(tp->t2_max - tp->t2_min) < EPS)
+    //     return tp->t2_max;
     double t = (double) rand() / RAND_MAX;
     if (PRINT)
     {
-        printf("k2: %lf\n", t);
         sum_time += t;
+        sum_time2 += t;
         count_time++;
+        count_time2++;
         double out = (max - min) * t + min;
-        double mid = (max + min) / 2;
-        if (mid > out)
-            printf("k perc: \t%d\n", (int) (100 *(mid - out) / mid));
+        sum_out_time2 += out;
+        printf("k2: %lf -    %lf\n", t, out);
+        // double mid = (max + min) / 2;
+        // if (mid > out)
+        //     printf("k perc: \t%d\n", (int) (100 *(mid - out) / mid));
     }
     return (max - min) * t + min;
 }
@@ -182,7 +189,11 @@ double process_time_2(time_params_t *tp)
 void print_mid_koef()
 {
     if (PRINT)
+    {
+        printf("mid koef_t 2: %lf\n", sum_time2 / count_time2);
+        printf("mid out 2: %lf\n", sum_out_time2 / count_time2);
         printf("mid koef_t: %lf\n", sum_time / count_time);
+    }
 }
 
 

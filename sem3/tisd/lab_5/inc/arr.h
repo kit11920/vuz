@@ -4,7 +4,7 @@
 #include "stddef.h"
 #include "time_system.h"
 
-#define MAX_LEN_ARR_QUEUE 10000
+#define MAX_LEN_ARR_QUEUE 50000
 
 
 typedef struct stuct_arr_queue

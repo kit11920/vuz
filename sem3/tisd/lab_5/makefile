@@ -5,11 +5,11 @@ FOUT := ./out
 CC := gcc -I $(FINC) 
 CFLAGS := --std=c99 -Wall -Werror -Wpedantic -Wextra -g3
 
-OBJS := $(FOUT)/main.o $(FOUT)/errs.o $(FOUT)/arr.o $(FOUT)/time_system.o $(FOUT)/list.o $(FOUT)/free_adresses_arr.o
+OBJS := $(FOUT)/main.o $(FOUT)/errs.o $(FOUT)/arr.o $(FOUT)/time_system.o $(FOUT)/list.o $(FOUT)/free_adresses_arr.o $(FOUT)/efficiency.o $(FOUT)/fort.o
 SRCS := $(wildcard $(FSRC)/*.c)
 
 app.exe : $(OBJS)
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $^ -o $@ -lm
 
 $(FOUT)/%.o : $(FSRC)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@

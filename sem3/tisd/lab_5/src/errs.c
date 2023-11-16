@@ -28,6 +28,10 @@ void print_err(int rc)
         printf("ERR_INTERVAL_RANGE: неверное соотношения минимального и максимального времени в интервале (так же не может быть от 0 до 0)\n\n");
         break;
     
+    case ERR_COUNT_REPEAT_TIME_SMALL:
+        printf("ERR_COUNT_REPEAT_TIME_SMALL: \n");
+        break;
+    
     default:
         printf("ERR: неизвествая ошибка\n\n");
         break;
