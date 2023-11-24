@@ -1,0 +1,5 @@
+digraph graph_ {
+ff -> e
+ff -> qq
+e -> a
+}

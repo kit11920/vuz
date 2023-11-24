@@ -85,20 +85,48 @@ unsigned long long measure_time_add_arr_queue(size_t size)
 {
     arr_queue_t queue;
     init_arr_queue(&queue);
-    unsigned long long beg, end, beg2, end2, time = 0;
+    unsigned long long beg, end, beg2 = 0, end2 = 0, time = 0;
 
     beg = ms_now();
     for (size_t i = 0; i < size; i++)
-        push_arr_queue(&queue, 1.2);
+        push_arr_queue(&queue, (double) i);
     end = ms_now();
 
-    beg2 = ms_now();
-    for (size_t i = 0; i < size; i++)
-        ;
-    end2 = ms_now();
+    // beg2 = ms_now();
+    // for (size_t i = 0; i < size; i++)
+    //     ;
+    // end2 = ms_now();
 
     // for (size_t i = 0; i < size; i++)
     //     del_elem_static_stack(&stack);
+
+    if (end2 - beg2 < end - beg)
+        time += end - beg - (end2 - beg2);
+
+    // printf("qwe   %llu %llu \n", end - beg, end2 - beg2);
+
+    return time;
+}
+
+unsigned long long measure_time_del_arr_queue(size_t size)
+{
+    arr_queue_t queue;
+    init_arr_queue(&queue);
+    unsigned long long beg, end, beg2 = 0, end2 = 0, time = 0;
+    double tmp;
+
+    for (size_t i = 0; i < size; i++)
+        push_arr_queue(&queue, (double) i);
+
+    beg = ms_now();
+    for (size_t i = 0; i < size; i++)
+        pop_arr_queue(&queue, &tmp);
+    end = ms_now();
+
+    // beg2 = ms_now();
+    // for (size_t i = 0; i < size; i++)
+    //     ;
+    // end2 = ms_now();
 
     if (end2 - beg2 < end - beg)
         time += end - beg - (end2 - beg2);
@@ -134,34 +162,6 @@ unsigned long long measure_time_add_list_queue(size_t size)
         return 0ull;
 
     return end - beg - (end2 - beg2);
-}
-
-unsigned long long measure_time_del_arr_queue(size_t size)
-{
-    arr_queue_t queue;
-    init_arr_queue(&queue);
-    unsigned long long beg, end, beg2, end2, time = 0;
-    double tmp;
-
-    for (size_t i = 0; i < size; i++)
-        push_arr_queue(&queue, (double) i);
-
-    beg = ms_now();
-    for (size_t i = 0; i < size; i++)
-        pop_arr_queue(&queue, &tmp);
-    end = ms_now();
-
-    beg2 = ms_now();
-    for (size_t i = 0; i < size; i++)
-        ;
-    end2 = ms_now();
-
-    if (end2 - beg2 < end - beg)
-        time += end - beg - (end2 - beg2);
-
-    // printf("qwe   %llu %llu \n", end - beg, end2 - beg2);
-
-    return time;
 }
 
 unsigned long long measure_time_del_list_queue(size_t size)
@@ -245,7 +245,7 @@ int make_compare_table(void)
     printf("Подождите, идет обработка данных...\n");
     ft_table_t *tab = ft_create_table();
     ft_set_cell_prop(tab, 0, FT_ANY_COLUMN, FT_CPROP_ROW_TYPE, FT_ROW_HEADER);
-    ft_printf_ln(tab, "size|add \n(array, mks)|add \n(list, mks)|efficiency\nadd|del \n(array, mks)|del \n(list, mks)|efficiency\ndel| array \n bytes| list \n bytes|percent\nbytes");
+    ft_printf_ln(tab, "size|add \n(array, mks)|add \n(list, mks)|efficiency\nadd\n(100%% -\n(list, mks))|del \n(array, mks)|del \n(list, mks)|efficiency\ndel\n(100%% -\n(list, mks))| array \n bytes| list \n bytes|percent\nbytes");
 
     // printf("Размер\t| Добавление элемента в стек (мкс)\t\t| Удаление элемента из стека (мкс)\t\t| Обьем памяти (Б)\n");
     // printf("\t|статический массив|список \t| процент |статический массив|список \t| процент |статический массив |список \n");
