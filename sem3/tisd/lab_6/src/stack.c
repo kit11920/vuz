@@ -6,16 +6,17 @@
 #include "errs.h"
 #include "stack.h"
 
+
 int create_stnode(lnode_t **node, type_data_t type, int data)
 {
     lnode_t *tmp = malloc(sizeof(lnode_t));
     if (tmp == NULL)
         return ERR_MEM;
-    tmp->type = type;
+    tmp->data_exp.type = type;
     if (type == NUM)
-        tmp->data.num = data;
+        tmp->data_exp.data.num = data;
     else
-        tmp->data.exp = (char) data;
+        tmp->data_exp.data.exp = (char) data;
     tmp->next = NULL;
 
     *node = tmp;
@@ -86,10 +87,10 @@ void print_list(lnode_t *head)
         printf("Список пуст\n");
     while (tmp != NULL)
     {
-        if (tmp->type == NUM)
-            printf("%d ", tmp->data.num);
+        if (tmp->data_exp.type == NUM)
+            printf("%d ", tmp->data_exp.data.num);
         else
-            printf("%c ", tmp->data.exp);
+            printf("%c ", tmp->data_exp.data.exp);
         tmp = tmp->next;
     }
     printf("\n");
@@ -101,10 +102,10 @@ void exp_tree_to_list_action(enode_t *root, void *param)
     {
         lnode_t **head = param;
         int rc = OK;
-        if (root->type == NUM)
-            rc = push_end_lnode_list(head, root->type, root->data.num);
+        if (root->data_exp.type == NUM)
+            rc = push_end_lnode_list(head, root->data_exp.type, root->data_exp.data.num);
         else
-            rc = push_end_lnode_list(head, root->type, root->data.exp);
+            rc = push_end_lnode_list(head, root->data_exp.type, root->data_exp.data.exp);
         
         if (rc != OK)
             free_list(head);
@@ -129,18 +130,18 @@ int calculate_stack(lnode_t *exp)
 
     while (tmp != NULL)
     {
-        if (tmp->type == NUM)
-            push_beg_lnode_list(&stack, tmp->type, tmp->data.num);
+        if (tmp->data_exp.type == NUM)
+            push_beg_lnode_list(&stack, tmp->data_exp.type, tmp->data_exp.data.num);
         else
         {
             right = pop_list(&stack);
             left = pop_list(&stack);
-            if (tmp->data.exp == PLUS_EXP)
-                res = left->data.num + right->data.num;
-            else if (tmp->data.exp == MINUS_EXP)
-                res = left->data.num - right->data.num;
+            if (tmp->data_exp.data.exp == PLUS_EXP)
+                res = left->data_exp.data.num + right->data_exp.data.num;
+            else if (tmp->data_exp.data.exp == MINUS_EXP)
+                res = left->data_exp.data.num - right->data_exp.data.num;
             else
-                res = left->data.num * right->data.num;
+                res = left->data_exp.data.num * right->data_exp.data.num;
             
             push_beg_lnode_list(&stack, NUM, res);
             free(left);
@@ -150,8 +151,8 @@ int calculate_stack(lnode_t *exp)
         // print_list(stack);
     }
     tmp = pop_list(&stack);
-    assert(pop_list(&exp) == NULL && tmp->type == NUM && stack == NULL);
-    res = tmp->data.num;
+    assert(pop_list(&exp) == NULL && tmp->data_exp.type == NUM && stack == NULL);
+    res = tmp->data_exp.data.num;
 
     free(tmp);
     return res;

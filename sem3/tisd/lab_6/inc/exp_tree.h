@@ -9,15 +9,21 @@
 
 typedef enum { EXP, NUM } type_data_t;
 
-typedef struct st_exp_tree_t enode_t;
-struct st_exp_tree_t
+typedef struct st_data_exp data_exp_t;
+struct st_data_exp
 {
     type_data_t type;
-    union data_t
+    union st_data_t
     {
         int num;
         char exp;
     } data;
+};
+
+typedef struct st_exp_tree_t enode_t;
+struct st_exp_tree_t
+{
+    data_exp_t data_exp;
     char id[2];
 
     enode_t *left;

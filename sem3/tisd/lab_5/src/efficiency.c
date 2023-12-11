@@ -81,31 +81,29 @@ double get_rse(unsigned long long *t, size_t len_t)
 
 typedef unsigned long long (* measure_time_t)(size_t);
 
+unsigned long long measure_time_for(size_t size)
+{
+    unsigned long long beg, end;
+
+    beg = ms_now();
+    for (size_t i = 0; i < size; i++)
+        ;
+    end = ms_now();
+    return end - beg;
+}
+
 unsigned long long measure_time_add_arr_queue(size_t size)
 {
     arr_queue_t queue;
     init_arr_queue(&queue);
-    unsigned long long beg, end, beg2 = 0, end2 = 0, time = 0;
+    unsigned long long beg, end;
 
     beg = ms_now();
     for (size_t i = 0; i < size; i++)
         push_arr_queue(&queue, (double) i);
     end = ms_now();
 
-    // beg2 = ms_now();
-    // for (size_t i = 0; i < size; i++)
-    //     ;
-    // end2 = ms_now();
-
-    // for (size_t i = 0; i < size; i++)
-    //     del_elem_static_stack(&stack);
-
-    if (end2 - beg2 < end - beg)
-        time += end - beg - (end2 - beg2);
-
-    // printf("qwe   %llu %llu \n", end - beg, end2 - beg2);
-
-    return time;
+    return end - beg;
 }
 
 unsigned long long measure_time_del_arr_queue(size_t size)
@@ -140,35 +138,23 @@ unsigned long long measure_time_add_list_queue(size_t size)
 {
     list_queue_t queue;
     init_list_queue(&queue);
-    unsigned long long beg, end, beg2, end2;
+    unsigned long long beg, end;
 
     beg = ms_now();
     for (size_t i = 0; i < size; i++)
         just_push_list_queue(&queue, 1.2);
     end = ms_now();
 
-    beg2 = ms_now();
-    for (size_t i = 0; i < size; i++)
-        ;
-    end2 = ms_now();
-
-    // for (size_t i = 0; i < size; i++)
-    //     del_elem_list_stack(&stack, &prev);
     free_queue(&queue);
 
-    // printf("qwe   %llu %llu \n", end - beg, end2 - beg2);
-
-    if (end2 - beg2 >= end - beg)
-        return 0ull;
-
-    return end - beg - (end2 - beg2);
+    return end - beg;
 }
 
 unsigned long long measure_time_del_list_queue(size_t size)
 {
     list_queue_t queue;
     init_list_queue(&queue);
-    unsigned long long beg, end, beg2, end2;
+    unsigned long long beg, end;
     double tmp;
 
     for (size_t i = 0; i < size; i++)
@@ -179,17 +165,8 @@ unsigned long long measure_time_del_list_queue(size_t size)
         just_pop_list_queue(&queue, &tmp);
     end = ms_now();
 
-    beg2 = ms_now();
-    for (size_t i = 0; i < size; i++)
-        ;
-    end2 = ms_now();
-
     free_queue(&queue);
-
-    // printf("qwe   %llu %llu \n", end - beg, end2 - beg2);
-    if (end2 - beg2 >= end - beg)
-        return 0ull;
-    return end - beg - (end2 - beg2);
+    return end - beg;
 }
 
 
@@ -222,9 +199,10 @@ int make_compare_table(void)
     int rc = OK;
     unsigned long long *t = NULL;
     int len_t = 500;
-    long long static_add_time, list_add_time, static_del_time, list_del_time;
+    long long static_add_time, list_add_time, static_del_time, list_del_time, for_time;
     size_t static_bytes, list_bytes;
-    int perc_add, perc_del, perc_bytes;
+    // int perc_add, perc_del, perc_bytes;
+    double k_add, k_del, k_bytes;
 
     static_bytes = sizeof(arr_queue_t);
 
@@ -245,7 +223,7 @@ int make_compare_table(void)
     printf("Подождите, идет обработка данных...\n");
     ft_table_t *tab = ft_create_table();
     ft_set_cell_prop(tab, 0, FT_ANY_COLUMN, FT_CPROP_ROW_TYPE, FT_ROW_HEADER);
-    ft_printf_ln(tab, "size|add \n(array, mks)|add \n(list, mks)|efficiency\nadd\n(100%% -\n(list, mks))|del \n(array, mks)|del \n(list, mks)|efficiency\ndel\n(100%% -\n(list, mks))| array \n bytes| list \n bytes|percent\nbytes");
+    ft_printf_ln(tab, "size|add \n(array, mks)|add \n(list, mks)|efficiency\nadd\nkoef|del \n(array, mks)|del \n(list, mks)|efficiency\ndel\nkoef| array \n bytes| list \n bytes|koef\nbytes");
 
     // printf("Размер\t| Добавление элемента в стек (мкс)\t\t| Удаление элемента из стека (мкс)\t\t| Обьем памяти (Б)\n");
     // printf("\t|статический массив|список \t| процент |статический массив|список \t| процент |статический массив |список \n");
@@ -253,12 +231,20 @@ int make_compare_table(void)
     {
         list_bytes = sizeof(list_queue_t) + sizeof(node_t) * size;
 
+        rc = gettime(measure_time_for, size, t, len_t, &for_time);
+        if (rc != OK)
+        {
+            print_err(rc);
+            return rc;
+        }
+
         rc = gettime(measure_time_add_arr_queue, size, t, len_t, &static_add_time);
         if (rc != OK)
         {
             print_err(rc);
             return rc;
         }
+        static_add_time -= for_time;
 
         rc = gettime(measure_time_del_arr_queue, size, t, len_t, &static_del_time);
         if (rc != OK)
@@ -266,6 +252,7 @@ int make_compare_table(void)
             print_err(rc);
             return rc;
         }
+        static_del_time -= for_time;
 
         rc = gettime(measure_time_add_list_queue, size, t, len_t, &list_add_time);
         if (rc != OK)
@@ -273,6 +260,7 @@ int make_compare_table(void)
             print_err(rc);
             return rc;
         }
+        list_add_time -= for_time;
 
         rc = gettime(measure_time_del_list_queue, size, t, len_t, &list_del_time);
         if (rc != OK)
@@ -280,17 +268,23 @@ int make_compare_table(void)
             print_err(rc);
             return rc;
         }
+        list_del_time -= for_time;
 
-        perc_add = (int) round((list_add_time - static_add_time) / (double) list_add_time * 100);
-        perc_del = (int) round((list_del_time - static_del_time) / (double) list_del_time * 100);
-        if (list_bytes >= static_bytes)
-            perc_bytes = (int) round((list_bytes - static_bytes) / (double) list_bytes * 100);
-        else
-            perc_bytes = -(int) round((static_bytes - list_bytes) / (double) static_bytes * 100);
-        // printf("%zu\t|%lld\t\t\t| %lld\t\t| %d |%lld\t\t| %lld\t\t| %d |%zu\t\t| %zu | %d\n", 
+        k_add = (double) list_add_time / static_add_time;
+        k_del = (double) list_del_time / static_del_time;
+        k_bytes = (double) list_bytes / static_bytes;
+
+        // perc_add = (int) round((list_add_time - static_add_time) / (double) list_add_time * 100);
+        // perc_del = (int) round((list_del_time - static_del_time) / (double) list_del_time * 100);
+        // if (list_bytes >= static_bytes)
+        //     perc_bytes = (int) round((list_bytes - static_bytes) / (double) list_bytes * 100);
+        // else
+        //     perc_bytes = -(int) round((static_bytes - list_bytes) / (double) static_bytes * 100);
+        ft_printf_ln(tab, "%zu|%lld|%lld|%.2lf|%lld|%lld|%.2lf|%zu|%zu|%.2lf", 
+        size, static_add_time, list_add_time, k_add, static_del_time, list_del_time, k_del, static_bytes, list_bytes, k_bytes);
+    
+        // ft_printf_ln(tab, "%zu|%lld|%lld|%d%%|%lld|%lld|%d%%|%zu|%zu|%d%%", 
         // size, static_add_time, list_add_time, perc_add, static_del_time, list_del_time, perc_del, static_bytes, list_bytes, perc_bytes);
-        ft_printf_ln(tab, "%zu|%lld|%lld|%d%%|%lld|%lld|%d%%|%zu|%zu|%d%%", 
-        size, static_add_time, list_add_time, perc_add, static_del_time, list_del_time, perc_del, static_bytes, list_bytes, perc_bytes);
     }
     printf("Размер статического массива - %d\n", MAX_LEN_ARR_QUEUE);
     printf("%s\n", ft_to_string(tab));

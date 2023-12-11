@@ -6,17 +6,13 @@
 
 #include "exp_tree.h"
 #include "errs.h"
+#include "exp_tree.h"
 
 typedef struct st_list_node_t lnode_t;
 
 struct st_list_node_t
 {
-    type_data_t type;
-    union st_data_t
-    {
-        int num;
-        char exp;
-    } data;
+    data_exp_t data_exp;
 
     lnode_t *next;
 };

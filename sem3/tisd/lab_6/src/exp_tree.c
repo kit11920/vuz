@@ -7,6 +7,7 @@
 #include "errs.h"
 #include "efficiency_stack_tree.h"
 #include "stack.h"
+#include "arr_stack.h"
 
 
 int act_exp_tree(void)
@@ -62,7 +63,9 @@ int act_exp_tree(void)
     // printf("Выражение поступающее в стек: ");
     // print_list(list_exp);
 
-    // int res = calculate_stack(list_exp);
+    // int res = calculate_arr_stack(list_exp);
+    // printf("res arr stack = %d\n", res);
+    // res = calculate_stack(list_exp);
     // printf("res stack = %d\n", res);
     make_compare_table_stack_tree(root, list_exp);
 
@@ -92,13 +95,13 @@ int add_enode_tree(enode_t **node, type_data_t type, int data, char *id)
         return rc;
     if (type == EXP)
     {
-        tmp->type = EXP;
-        tmp->data.exp = (char) data;
+        tmp->data_exp.type = EXP;
+        tmp->data_exp.data.exp = (char) data;
     }
     else
     {
-        tmp->type = NUM;
-        tmp->data.num = data;
+        tmp->data_exp.type = NUM;
+        tmp->data_exp.data.num = data;
     }
     strcpy(tmp->id, id);
     
@@ -155,10 +158,10 @@ void each_lrn_exp_tree(enode_t *root, void (*action)(enode_t *root, void *param)
 void print_exp_node(enode_t *root, void *param)
 {
     (void) param;
-    if (root->type == EXP)
-        printf("%c ", root->data.exp);
+    if (root->data_exp.type == EXP)
+        printf("%c ", root->data_exp.data.exp);
     else
-        printf("%d ", root->data.num);
+        printf("%d ", root->data_exp.data.num);
 }
 
 void nlr_print_exp_tree(enode_t *root)
@@ -169,16 +172,16 @@ void nlr_print_exp_tree(enode_t *root)
 
 int calculate_tree(enode_t *root)
 {
-    if (root->type == NUM)
-        return root->data.num;
+    if (root->data_exp.type == NUM)
+        return root->data_exp.data.num;
     
     int left = calculate_tree(root->left);
     int right = calculate_tree(root->right);
     int out;
 
-    if (root->data.exp == PLUS_EXP)
+    if (root->data_exp.data.exp == PLUS_EXP)
         out = left + right;
-    else if (root->data.exp == MINUS_EXP)
+    else if (root->data_exp.data.exp == MINUS_EXP)
         out = left - right;
     else // (root->data.exp == MULT_EXP)
         out = left * right;
@@ -190,14 +193,14 @@ int calculate_tree(enode_t *root)
 
 void print_parant_child(FILE *f, enode_t *parant, enode_t *child)
 {
-    if (parant->type == EXP && child->type == EXP)
-        fprintf(f, "\"%c\\n(%s)\" -> \"%c\\n(%s)\"\n", parant->data.exp, parant->id, child->data.exp, child->id);
-    else if (parant->type == NUM && child->type == EXP)
-        fprintf(f, "\"%d\\n(%s)\" -> \"%c\\n(%s)\"\n", parant->data.num, parant->id, child->data.exp, child->id);
-    else if (parant->type == EXP && child->type == NUM)
-        fprintf(f, "\"%c\\n(%s)\" -> \"%d\\n(%s)\"\n", parant->data.exp, parant->id, child->data.num, child->id);
+    if (parant->data_exp.type == EXP && child->data_exp.type == EXP)
+        fprintf(f, "\"%c\\n(%s)\" -> \"%c\\n(%s)\"\n", parant->data_exp.data.exp, parant->id, child->data_exp.data.exp, child->id);
+    else if (parant->data_exp.type == NUM && child->data_exp.type == EXP)
+        fprintf(f, "\"%d\\n(%s)\" -> \"%c\\n(%s)\"\n", parant->data_exp.data.num, parant->id, child->data_exp.data.exp, child->id);
+    else if (parant->data_exp.type == EXP && child->data_exp.type == NUM)
+        fprintf(f, "\"%c\\n(%s)\" -> \"%d\\n(%s)\"\n", parant->data_exp.data.exp, parant->id, child->data_exp.data.num, child->id);
     else
-        fprintf(f, "\"%d\\n(%s)\" -> \"%d\\n(%s)\"\n", parant->data.num, parant->id, child->data.num, child->id);
+        fprintf(f, "\"%d\\n(%s)\" -> \"%d\\n(%s)\"\n", parant->data_exp.data.num, parant->id, child->data_exp.data.num, child->id);
 }
 
 void exp_to_dot(enode_t *root, void *param)

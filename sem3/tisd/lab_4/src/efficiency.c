@@ -82,7 +82,7 @@ unsigned long long measure_time_add_static_stack(size_t size)
     struct static_stack stack;
     init_static_stack(&stack);
     struct list_stack a;
-    unsigned long long beg, end, beg2, end2, time = 0;
+    unsigned long long beg, end;
 
     // if (size > MAX_LEN_STATICK_STACK)
     // {
@@ -112,47 +112,47 @@ unsigned long long measure_time_add_static_stack(size_t size)
         add_elem_static_stack(&stack, &a);
     end = ms_now();
 
-    beg2 = ms_now();
-    for (size_t i = 0; i < size; i++)
-        ;
-    end2 = ms_now();
+    // beg2 = ms_now();
+    // for (size_t i = 0; i < size; i++)
+    //     ;
+    // end2 = ms_now();
 
     for (size_t i = 0; i < size; i++)
         del_elem_static_stack(&stack);
 
-    if (end2 - beg2 < end - beg)
-        time += end - beg - (end2 - beg2);
+    // if (end2 - beg2 < end - beg)
+    //     time += end - beg - (end2 - beg2);
 
     // printf("qwe   %llu %llu \n", end - beg, end2 - beg2);
 
-    return time;
+    return end - beg;
 }
 
 unsigned long long measure_time_add_list_stack(size_t size)
 {
     struct list_stack *stack = NULL;
     struct list_stack prev;
-    unsigned long long beg, end, beg2, end2;
+    unsigned long long beg, end;
 
     beg = ms_now();
     for (size_t i = 0; i < size; i++)
         add_elem_list_stack(&stack);
     end = ms_now();
 
-    beg2 = ms_now();
-    for (size_t i = 0; i < size; i++)
-        ;
-    end2 = ms_now();
+    // beg2 = ms_now();
+    // for (size_t i = 0; i < size; i++)
+    //     ;
+    // end2 = ms_now();
 
     for (size_t i = 0; i < size; i++)
         del_elem_list_stack(&stack, &prev);
 
     // printf("qwe   %llu %llu \n", end - beg, end2 - beg2);
 
-    if (end2 - beg2 >= end - beg)
-        return 0ull;
+    // if (end2 - beg2 >= end - beg)
+    //     return 0ull;
 
-    return end - beg - (end2 - beg2);
+    return end - beg;
 }
 
 unsigned long long measure_time_del_static_stack(size_t size)
@@ -160,7 +160,7 @@ unsigned long long measure_time_del_static_stack(size_t size)
     struct static_stack stack;
     init_static_stack(&stack);
     struct list_stack a;
-    unsigned long long beg, end, beg2, end2, time = 0;
+    unsigned long long beg, end;
 
     // if (size > MAX_LEN_STATICK_STACK)
     // {
@@ -192,24 +192,24 @@ unsigned long long measure_time_del_static_stack(size_t size)
         del_elem_static_stack(&stack);
     end = ms_now();
 
-    beg2 = ms_now();
-    for (size_t i = 0; i < size; i++)
-        ;
-    end2 = ms_now();
+    // beg2 = ms_now();
+    // for (size_t i = 0; i < size; i++)
+    //     ;
+    // end2 = ms_now();
 
-    if (end2 - beg2 < end - beg)
-        time += end - beg - (end2 - beg2);
+    // if (end2 - beg2 < end - beg)
+    //     time += end - beg - (end2 - beg2);
 
     // printf("qwe   %llu %llu \n", end - beg, end2 - beg2);
 
-    return time;
+    return end - beg;
 }
 
 unsigned long long measure_time_del_list_stack(size_t size)
 {
     struct list_stack *stack = NULL;
     struct list_stack prev;
-    unsigned long long beg, end, beg2, end2;
+    unsigned long long beg, end;
 
     for (size_t i = 0; i < size; i++)
         add_elem_list_stack(&stack);
@@ -219,15 +219,15 @@ unsigned long long measure_time_del_list_stack(size_t size)
         del_elem_list_stack(&stack, &prev);
     end = ms_now();
 
-    beg2 = ms_now();
-    for (size_t i = 0; i < size; i++)
-        ;
-    end2 = ms_now();
+    // beg2 = ms_now();
+    // for (size_t i = 0; i < size; i++)
+    //     ;
+    // end2 = ms_now();
 
     // printf("qwe   %llu %llu \n", end - beg, end2 - beg2);
-    if (end2 - beg2 >= end - beg)
-        return 0ull;
-    return end - beg - (end2 - beg2);
+    // if (end2 - beg2 >= end - beg)
+    //     return 0ull;
+    return end - beg;
 }
 
 
@@ -262,7 +262,8 @@ int make_compare_table(void)
     int len_t = 500;
     long long static_add_time, list_add_time, static_del_time, list_del_time;
     size_t st_stack_bytes, li_stack_bytes;
-    int perc_add, perc_del, perc_bytes;
+    // int perc_add, perc_del, perc_bytes;
+    double koef_add, koef_del, koef_bytes;
 
     st_stack_bytes = sizeof(struct static_stack);
 
@@ -318,16 +319,14 @@ int make_compare_table(void)
             return rc;
         }
 
-        perc_add = (int) round((list_add_time - static_add_time) / (double) list_add_time * 100);
-        perc_del = (int) round((list_del_time - static_del_time) / (double) list_del_time * 100);
-        if (li_stack_bytes >= st_stack_bytes)
-            perc_bytes = (int) round((li_stack_bytes - st_stack_bytes) / (double) li_stack_bytes * 100);
-        else
-            perc_bytes = -(int) round((st_stack_bytes - li_stack_bytes) / (double) st_stack_bytes * 100);
+        koef_add = (double) list_add_time / (double) static_add_time;
+        koef_del = (double) list_del_time / (double) static_del_time;
+        koef_bytes = (double) li_stack_bytes / (double) st_stack_bytes;
+
         // printf("%zu\t|%lld\t\t\t| %lld\t\t| %d |%lld\t\t| %lld\t\t| %d |%zu\t\t| %zu | %d\n", 
         // size, static_add_time, list_add_time, perc_add, static_del_time, list_del_time, perc_del, st_stack_bytes, li_stack_bytes, perc_bytes);
-        ft_printf_ln(tab, "%zu|%lld|%lld|%d%%|%lld|%lld|%d%%|%zu|%zu|%d%%", 
-        size, static_add_time, list_add_time, perc_add, static_del_time, list_del_time, perc_del, st_stack_bytes, li_stack_bytes, perc_bytes);
+        ft_printf_ln(tab, "%zu|%lld|%lld|%.2lf|%lld|%lld|%.2lf|%zu|%zu|%.2lf", 
+        size, static_add_time, list_add_time, koef_add, static_del_time, list_del_time, koef_del, st_stack_bytes, li_stack_bytes, koef_bytes);
     }
     printf("Размер статического массива - %d\n", MAX_LEN_STATICK_STACK);
     printf("%s\n", ft_to_string(tab));

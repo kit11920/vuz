@@ -1,0 +1,18 @@
+digraph graph_ {
+"5\nbal = 1\nh = 5" -> "3\nbal = -1\nh = 3"
+"5\nbal = 1\nh = 5" -> "44\nbal = 0\nh = 4"
+"3\nbal = -1\nh = 3" -> "1\nbal = 0\nh = 2"
+"3\nbal = -1\nh = 3" -> "4\nbal = 0\nh = 1"
+"1\nbal = 0\nh = 2" -> "-1\nbal = 0\nh = 1"
+"1\nbal = 0\nh = 2" -> "2\nbal = 0\nh = 1"
+"44\nbal = 0\nh = 4" -> "7\nbal = 1\nh = 3"
+"44\nbal = 0\nh = 4" -> "114\nbal = -1\nh = 3"
+"7\nbal = 1\nh = 3" -> "6\nbal = 0\nh = 1"
+"7\nbal = 1\nh = 3" -> "9\nbal = 0\nh = 2"
+"9\nbal = 0\nh = 2" -> "8\nbal = 0\nh = 1"
+"9\nbal = 0\nh = 2" -> "11\nbal = 0\nh = 1"
+"114\nbal = -1\nh = 3" -> "54\nbal = 0\nh = 2"
+"114\nbal = -1\nh = 3" -> "115\nbal = 0\nh = 1"
+"54\nbal = 0\nh = 2" -> "45\nbal = 0\nh = 1"
+"54\nbal = 0\nh = 2" -> "57\nbal = 0\nh = 1"
+}

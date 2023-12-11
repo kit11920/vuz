@@ -371,18 +371,22 @@ int make_compare_table_fill_find(void)
         ft_printf_ln(tab, "%zu|%lld|%lld|%lld|%lld", 
         height, fill_left_tree_time, find_in_left_tree_time, fill_2branch_tree_time, find_in_2branch_tree_time);
     }
+    printf("Таблица сравнения функции поиска в бинарном дереве поиска и заполнения его:\n");
     printf("%s\n", ft_to_string(tab));
     ft_destroy_table(tab);
 
     printf("Подождите, идет обработка данных для таблицы 2...\n");
     tab = ft_create_table();
     ft_set_cell_prop(tab, 0, FT_ANY_COLUMN, FT_CPROP_ROW_TYPE, FT_ROW_HEADER);
-    ft_printf_ln(tab, "height|fill\nleft tree|fill half\nfull tree|find in half\nfull tree|fill\nfull tree|find in\nfull tree");
+    ft_printf_ln(tab, "height|fill\nleft tree|fill\n2branch tree|fill half\nfull tree|fill\nfull tree");
 
     beg = 12, end = 20, step = 2;
     for (size_t height = beg; height <= end; height += step)
     {
         rc = gettime(fill_left_tree_measure_time, height, t, len_t, &fill_left_tree_time);
+        assert(rc == OK);
+
+        rc = gettime(fill_2branch_tree_measure_time, height, t, len_t, &fill_2branch_tree_time);
         assert(rc == OK);
 
         rc = gettime(fill_half_full_tree_measure_time, height, t, len_t, &fill_half_full_tree_time);
@@ -397,9 +401,10 @@ int make_compare_table_fill_find(void)
         rc = gettime(find_full_tree_measure_time, height, t, len_t, &find_in_full_tree_fime);
         assert(rc == OK);
  
-        ft_printf_ln(tab, "%zu|%lld|%lld|%lld|%lld|%lld", 
-        height, fill_left_tree_time, fill_half_full_tree_time, find_in_half_full_tree_fime, fill_full_tree_time, find_in_full_tree_fime);
+        ft_printf_ln(tab, "%zu|%lld|%lld|%lld|%lld", 
+        height, fill_left_tree_time, fill_2branch_tree_time, fill_half_full_tree_time, fill_full_tree_time);
     }
+    printf("Таблица сравнения времени работы функции заполнения бинарного дерева поиска \nв зависимости от его ветвистости:\n");
     printf("%s\n", ft_to_string(tab));
     ft_destroy_table(tab);
 

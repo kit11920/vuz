@@ -1,0 +1,10 @@
+graph graph_ {
+rankdir=LR;
+node [shape = box];
+"q\n(0)" -- "r \n(3)";
+"q\n(0)" -- "t \n(4)";
+"q\n(0)" -- "y\n(5)";
+"w \n(1)" -- "e\n(2)";
+"w \n(1)" -- "r \n(3)";
+"e\n(2)" -- "t \n(4)";
+}
