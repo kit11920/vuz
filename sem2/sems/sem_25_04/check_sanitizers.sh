@@ -1,1 +1,0 @@
-../testing_system/check_sanitizers.sh

@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [ $# != 1 ]; then
+  echo Usage: ./asan.sh file-name
+  exit 1
+fi
+
+# gcc
+clang -std=c99 -Wall -fsanitize=address -fno-omit-frame-pointer -g $1 -o test_asan

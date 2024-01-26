@@ -1,1 +1,0 @@
-../../../testing_system/func_tests/scripts/pos_case.sh

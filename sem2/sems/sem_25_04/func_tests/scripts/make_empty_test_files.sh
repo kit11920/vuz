@@ -1,1 +1,0 @@
-../../../testing_system/func_tests/scripts/make_empty_test_files.sh

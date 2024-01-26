@@ -1,1 +1,0 @@
-../testing_system/build_debug_ubsan.sh
