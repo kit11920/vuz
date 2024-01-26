@@ -1,0 +1,1 @@
+../../../testing_system_files_make/func_tests/scripts/neg_case.sh

@@ -1,0 +1,1 @@
+../testing_system/collect_coverage.sh

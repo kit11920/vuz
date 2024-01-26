@@ -1,0 +1,1 @@
+../../../testing_system/func_tests/scripts/comparator2/comparator.sh

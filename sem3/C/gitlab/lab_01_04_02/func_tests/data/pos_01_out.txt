@@ -1,0 +1,1 @@
+Введите время в секундах: 1 hours 1 minuts 1 seconds

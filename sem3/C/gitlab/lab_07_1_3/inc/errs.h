@@ -1,0 +1,20 @@
+#ifndef ERRS_H__
+#define ERRS_H__
+
+#define OK 0
+#define ERR_BAD_PARAM 1
+#define ERR_FILE_IN_NOT_EXIST 2
+#define ERR_IO 3
+#define ERR_FILE_IN_EMPTY 4
+#define ERR_DYNAMIC_MEMORY 5
+#define ERR_EMPTY_ARRAY 6
+#define ERR_EMPTY_FILTER_ARRAY 7
+#define ERR_CANNOT_OPEN_FILE_OUT 8
+#define ERR_POINTERS 11
+
+#define ERR_COUNT_REPEAT_TIME_SMALL 9
+#define ERR_FILE_DATA_TIME_NOT_EXICT 10
+
+
+
+#endif
