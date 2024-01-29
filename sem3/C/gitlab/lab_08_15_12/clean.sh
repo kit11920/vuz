@@ -1,0 +1,1 @@
+../testing_system_files_make/clean.sh

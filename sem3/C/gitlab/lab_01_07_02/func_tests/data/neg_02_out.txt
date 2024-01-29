@@ -1,0 +1,2 @@
+Need |x| <= 1 and 0 < eps <= 1
+

@@ -1,0 +1,1 @@
+../../lab_10_03_common/unit_tests/src/check_assoc_array_min.c

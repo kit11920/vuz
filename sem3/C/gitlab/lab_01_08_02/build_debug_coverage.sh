@@ -1,0 +1,1 @@
+../testing_system/build_debug_coverage.sh

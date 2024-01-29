@@ -1,0 +1,12 @@
+Greece
+Athens
+1
+300
+200000
+
+Russia
+Moscow
+0
+0
+50000
+
