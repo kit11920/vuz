@@ -1,8 +1,8 @@
 import sys
 from PyQt5 import uic
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QTableWidgetItem)
-from PyQt5.QtGui import QPainter, QColor, QBrush, QPalette
-from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPainter, QPen, QFont
+from PyQt5.QtCore import Qt, QPoint
 
 
 DEBUG = True
@@ -12,6 +12,7 @@ ERR = 'ERROR: '
 ERR_NOT_RECT = ERR + 'Данная точка вместе с уже введенными не может образовать прямоугольник'
 ERR_RECT_EXIST_POINT = ERR + 'Данная точка уже определена, если хотите ее изменить, то выберете функцию редактирования '
 ERR_EDIT_RECT_POINT = ERR + 'Редактировать точку можно только, когда их введено 1, 2 или 3 шт'
+ERR_NO_DATA = ERR + 'Не введена еще ни одна точка'
 ##
 
 
@@ -29,9 +30,221 @@ class CanvasWidget(QWidget):
     def __init__(self):
         super().__init__()
         # uic.loadUi('canvas.ui', self)
-
+        
+        self.frame_size = 50
+        self.k = 1 # коэфицент масштабирования
+        self.real_x = self.width()
+        self.real_y = self.height()
+        self.max_x = self.max_y = self.min_x = self.min_y = self.maxlen_x = self.maxlen_y = None
+        self.center = [0, 0]
+        self.frame_size = 50
+        self.text_height = 25
+        self.text_width = 200
+        
         self.rectp = dict()
         self.arrp = list()
+        self.canvas_rect = dict()
+        self.canvas_arr = list()
+
+    def update_sup_data(self):
+        self.real_x = self.width()
+        self.real_y = self.height()
+        self.max_x = max([i[0] for i in self.rectp.values()] + [i[0] for i in self.arrp])
+        self.min_x = min([i[0] for i in self.rectp.values()] + [i[0] for i in self.arrp])
+        self.max_y = max([i[1] for i in self.rectp.values()] + [i[1] for i in self.arrp])
+        self.min_y = min([i[1] for i in self.rectp.values()] + [i[1] for i in self.arrp])
+        self.maxlen_x = self.max_x - self.min_x
+        self.maxlen_y = self.max_y - self.min_y
+
+    # высчитывает коэффицент масштабирования
+    # предполагается что вспомагательные данные обновлены
+    def update_koef(self):
+        self.k = min((self.real_x - self.frame_size * 2) / self.maxlen_x, (self.real_y - self.frame_size * 2) / self.maxlen_y)
+
+        if DEBUG:
+            print(f'{self.update_koef.__name__}:\t self.k: {self.k}, self.frame_size: {self.frame_size}\n'
+                  f'(real_x, real_y): {(self.real_x, self.real_y)}\n'
+                  f'(maxlen_x, maxlen_y): {(self.maxlen_x, self.maxlen_y)}')
+
+    # предполагается что вспомагательные данные обновлены
+    def to_positiv_coords(self):
+        plusx = plusy = 0
+        if self.min_x < 0:
+            plusx = -self.min_x
+        if self.min_y < 0:
+            plusy = -self.min_y
+
+        for k in self.canvas_rect.keys():
+            self.canvas_rect[k][0] += plusx
+            self.canvas_rect[k][1] += plusy
+        for i in range(len(self.canvas_arr)):
+            self.canvas_arr[i][0] += plusx
+            self.canvas_arr[i][1] += plusy
+        self.center = [plusx, plusy]
+
+        if DEBUG:
+            print(f'\n{self.to_positiv_coords.__name__}:\t self.center: {self.center}\n'
+                  f'self.canvas_rect: {self.canvas_rect}\n'
+                  f'self.canvas_arr: {self.canvas_arr}')
+
+    # масштабируем
+    def scaling(self):
+        for key in self.canvas_rect.keys():
+            self.canvas_rect[key] = list(map(lambda x: int(x * self.k), self.canvas_rect[key]))
+        for i in range(len(self.canvas_arr)):
+            self.canvas_arr[i] = list(map(lambda x: int(x * self.k), self.canvas_arr[i]))
+        self.center = list(map(lambda x: int(x * self.k), self.center))
+
+        if DEBUG:
+            print(f'\n{self.scaling.__name__}:\t self.center: {self.center}\n'
+                  f'self.canvas_rect: {self.canvas_rect}\n'
+                  f'self.canvas_arr: {self.canvas_arr}')
+
+    def on_focus(self):
+        minusx = min([i[0] for i in self.canvas_rect.values()] + [i[0] for i in self.canvas_arr]) - self.frame_size
+        minusy = min([i[1] for i in self.canvas_rect.values()] + [i[1] for i in self.canvas_arr]) - self.frame_size
+        for k in self.canvas_rect.keys():
+            self.canvas_rect[k][0] -= minusx
+            self.canvas_rect[k][1] -= minusy
+        for i in range(len(self.canvas_arr)):
+            self.canvas_arr[i][0] -= minusx
+            self.canvas_arr[i][1] -= minusy
+        self.center[0] -= minusx
+        self.center[1] -= minusy
+
+        if DEBUG:
+            print(f'\n{self.on_focus.__name__}:\t '
+                  f'self.canvas_rect: {self.canvas_rect}\n'
+                  f'self.canvas_arr: {self.canvas_arr}')
+
+    # переворачиваем ось Y вниз, как в экранную систему координат
+    # после масштабирования!!!!!
+    def reverse_y(self):
+        for k in self.canvas_rect.keys():
+            self.canvas_rect[k][1] = self.real_y - self.frame_size - self.canvas_rect[k][1]
+        for i in range(len(self.canvas_arr)):
+            self.canvas_arr[i][1] = self.real_y - self.frame_size - self.canvas_arr[i][1]
+        self.center[1] = self.real_y - self.frame_size - self.center[1]
+
+        if DEBUG:
+            print(f'\n{self.reverse_y.__name__}:\t self.center: {self.center}\n'
+                  f'self.canvas_rect: {self.canvas_rect}\n'
+                  f'self.canvas_arr: {self.canvas_arr}')
+
+    def add_frame(self):
+        for k in self.canvas_rect.keys():
+            self.canvas_rect[k][0] += self.frame_size
+            self.canvas_rect[k][1] += self.frame_size
+        for i in range(len(self.canvas_arr)):
+            self.canvas_arr[i][0] += self.frame_size
+            self.canvas_arr[i][1] += self.frame_size
+        self.center[0] += self.frame_size
+        self.center[1] += self.frame_size
+        if DEBUG:
+            print(f'\n{self.add_frame.__name__}:\t self.center: {self.center}\n'
+                  f'self.canvas_rect: {self.canvas_rect}\n'
+                  f'self.canvas_arr: {self.canvas_arr}')
+
+    def set_data(self, rect, arr):
+        if len(rect) + len(arr) == 0:
+            return
+        self.rectp = rect
+        self.arrp = arr
+        for k in self.rectp.keys():
+            self.canvas_rect[k] = list(self.rectp[k])
+        self.canvas_arr = list()
+        for i in range(len(self.arrp)):
+            self.canvas_arr.append(list(self.arrp[i]))
+
+        if DEBUG:
+            print(f'START {self.set_data.__name__}:\n'
+                  f'self.canvas_rect: {self.canvas_rect}\n'
+                  f'self.canvas_arr: {self.canvas_arr}')
+        self.update_sup_data()
+        self.update_koef()
+
+        self.to_positiv_coords()
+        self.scaling()
+        self.on_focus()
+        self.reverse_y()
+        self.add_frame()
+
+        if DEBUG:
+            print(f'END {self.set_data.__name__}:\t self.center: {self.center}\n'
+                  f'self.canvas_rect: {self.canvas_rect}\n'
+                  f'self.canvas_arr: {self.canvas_arr}\n' + '-' * 100)
+        self.update()
+
+    # оси координат
+    def paint_axis(self, qp):
+        pen = QPen()
+        pen.setWidth(1)
+        pen.setColor(Qt.black)
+        qp.setPen(pen)
+
+        x, y = self.center
+        qp.drawLine(x, 0, x, self.height())
+        qp.drawLine(0, y, self.width(), y)
+
+    def paint_rect(self, qp):
+        pen = QPen()
+        pen.setWidth(5)
+        pen.setColor(Qt.red)
+        qp.setPen(pen)
+        if len(self.rectp) == 1:
+            qp.drawPoint(*list(self.canvas_rect.values())[0])
+        elif len(self.rectp) == 2:
+            p1, p2 = list(self.canvas_rect.values())
+            qp.drawLine(*p1, *p2)
+        elif len(self.rectp) == 3:
+            p1, p2, p3 = list(self.rectp.values())
+            c1, c2, c3 = list(self.canvas_rect.values())
+            if if_90_grad(p1, p2, p3):
+                qp.drawLine(*c1, *c2)
+                qp.drawLine(*c3, *c2)
+            elif if_90_grad(p1, p3, p2):
+                qp.drawLine(*c1, *c3)
+                qp.drawLine(*c3, *c2)
+            elif if_90_grad(p2, p1, p3):
+                qp.drawLine(*c1, *c3)
+                qp.drawLine(*c1, *c2)
+        elif len(self.rectp) == 4:
+            p1, p2, p3, p4 = list(self.rectp.values())
+            c1, c2, c3, c4 = list(self.canvas_rect.values())
+            if if_90_grad(p1, p2, p3):
+                qp.drawPolygon(*map(lambda x: QPoint(*x), [c1, c2, c3, c4]))
+            elif if_90_grad(p1, p3, p2):
+                qp.drawPolygon(*map(lambda x: QPoint(*x), [c1, c3, c2, c4]))
+            elif if_90_grad(p2, p1, p3):
+                qp.drawPolygon(*map(lambda x: QPoint(*x), [c2, c1, c3, c4]))
+
+    def paint_points(self, qp):
+        pen = QPen()
+        pen.setWidth(10)
+        pen.setColor(Qt.blue)
+        qp.setPen(pen)
+
+        for i in range(len(self.canvas_arr)):
+            qp.drawPoint(*self.canvas_arr[i])
+
+    def paint_text(self, qp):
+        pen = QPen()
+        pen.setWidth(1)
+        pen.setColor(Qt.black)
+        qp.setPen(pen)
+
+        font = QFont()
+        font.setPixelSize(self.text_height)
+        qp.setFont(font)
+        for k in self.rectp.keys():
+            text = f'{k}{self.rectp[k]}'
+            x, y = self.canvas_rect[k]
+            qp.drawText(x + 5, y - 5, text)
+            # qp.drawText(x + 5, y - self.text_height - 5, self.text_width, self.text_height, Qt.TextWordWrap, text)
+        for i in range(len(self.arrp)):
+            text = f'{self.arrp[i]}'
+            x, y = self.canvas_arr[i]
+            qp.drawText(x + 5, y - 5, text)
 
     def paintEvent(self, event):
         qp = QPainter(self)
@@ -42,20 +255,22 @@ class CanvasWidget(QWidget):
         qp.drawRect(self.rect())
         #
 
+        # оси координат
+        self.paint_axis(qp)
         # прямоугольник
-        if len(self.rectp) == 1:
-            qp.drawPoint(list(self.rectp.values())[0])
-        elif len(self.rectp) == 2:
-            qp.drawLine(*list(self.rectp.values()))
-        elif len(self.rectp) == 3:
-            p1, p2, p3 = list(self.rectp.values())
-            qp.drawLine(*p1, *p2)
+        self.paint_rect(qp)
+        # точки
+        self.paint_points(qp)
+        # текст
+        self.paint_text(qp)
+
         # qp.setPen(Qt.red)
         # print('height: ', self.height())
         # qp.drawLine(0, self.height() - 1, self.width(), self.height() - 1) # абсцисса
         # qp.drawLine(0, self.height() - 1, 0, 0) # орбината
 
         qp.end()
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -135,7 +350,7 @@ class MainWindow(QMainWindow):
                 if if_90_grad(p2, p1, p3):
                     x4 = x + (p2[0] - p1[0])
                     y4 = y + (p2[1] - p1[1])
-                elif if_90_grad(p1, p2, p2):
+                elif if_90_grad(p1, p2, p3):
                     x4 = p1[0] + (x - p2[0])
                     y4 = p1[1] + (y - p2[1])
                 elif if_90_grad(p1, p3, p2):
@@ -326,7 +541,20 @@ class MainWindow(QMainWindow):
         self.statusbar.clearMessage()
 
     def paint_res(self):
-        pass
+
+        self.rect = {
+            'A': (6, 0),
+            'C': (7, 3),
+            'D': (1, 5),
+            'B': (0, 2)
+        }
+        self.arrp = [(20, 30), (10, 10), (19, 10), (10, 5)]
+
+        if len(self.rect) == 0 and len(self.arrp) == 0:
+            self.statusbar.showMessage(ERR_NO_DATA)
+        else:
+            self.canvas.set_data(self.rect, self.arrp)
+            self.canvas.update()
 
 
 def exept_hooks(cls, exeption, trades):
