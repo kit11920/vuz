@@ -306,7 +306,8 @@ class MainWindow(QMainWindow):
             self.canvas.set_data_and_update({}, [])
             self.statusbar.showMessage(ERR_NO_DATA)
         else:
-            self.canvas.set_data_and_update(self.rect, self.arrp)
+            res_text = self.canvas.set_data_and_update(self.rect, self.arrp)
+            self.res_te.setPlainText(res_text)
             # self.canvas.set_data(self.rect, self.arrp)
 
     def show_info(self):

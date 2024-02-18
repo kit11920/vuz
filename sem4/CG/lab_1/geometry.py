@@ -152,15 +152,16 @@ def angle_ox(p1, p2):
 
 
 # принимает список прямоугольника и список точек
-# возвращает кортеж из 3 точек прямоугольника, точку центра прямоугольника, и точку пересечения биссектрис
+# возвращает кортеж из 3 точек прямоугольника, точку центра прямоугольника, и точку пересечения биссектрис и угол в градусах
 def find_triangle(rect_list, arr, debug_hear=False):
     if DEBUG:
         print(f'find_triangle:\t rect_list: {rect_list}, arr: {arr}')
     if len(rect_list) < 4 or len(arr) < 3:
         raise Exception('ERR find_triangle PARAMETRS')
     min_angle = 360
-    bis_out = None
-    points = None
+    angle = 360
+    bis_out = []
+    points = tuple()
 
     center_rect = center_of_rect(rect_list)
     for i in range(len(arr)):
@@ -182,6 +183,6 @@ def find_triangle(rect_list, arr, debug_hear=False):
                             bis_out = bis
                             points = (p1, p2, p3)
 
-    return points, bis_out, center_rect
+    return points, bis_out, center_rect, m.degrees(min_angle)
 
 

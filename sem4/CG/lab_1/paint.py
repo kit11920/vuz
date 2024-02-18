@@ -24,6 +24,7 @@ class CanvasWidget(QWidget):
         self.triangle_paint = False
         self.points = self.point_bis = self.center_rect = None
         self.c_points = self.c_point_bis = self.c_center_rect = None
+        self.angle = None
 
         self.rectp = dict()
         self.arrp = list()
@@ -157,13 +158,15 @@ class CanvasWidget(QWidget):
         if len(self.rectp) < 4 or len(self.arrp) < 3:
             self.triangle_paint = False
             return
-        self.points, self.point_bis, self.center_rect = find_triangle(list(self.rectp.values()), list(set(self.arrp)), debug_hear=True)
-        # self.c_points, self.c_point_bis, self.c_center_rect = self.points, self.point_bis, self.center_rect
-        # self.c_points, self.c_point_bis, self.c_center_rect = find_triangle(list(self.canvas_rect.values()), list(set(self.canvas_arr)))
-        self.triangle_paint = True
 
-        if DEBUG:
-            print(f'{self.find_triangle_to_draw.__name__}:\t self.points: {self.points}')
+        self.points, self.point_bis, self.center_rect, self.angle = find_triangle(list(self.rectp.values()), list(set(self.arrp)), debug_hear=True)
+        if len(self.points) != 0:
+            self.triangle_paint = True
+
+            if DEBUG:
+                print(f'{self.find_triangle_to_draw.__name__}:\t self.points: {self.points}')
+        else:
+            self.triangle_paint = False
 
     def find_canvas_triangle(self):
         if self.triangle_paint:
@@ -191,6 +194,7 @@ class CanvasWidget(QWidget):
                       f'self.c_points: {self.c_points}\n'
                       f'self.c_center_rect: {self.c_center_rect}, self.c_point_bis: {self.c_point_bis}')
 
+    # обновляет данные и рисует, возвращает текстовый ответ
     def set_data_and_update(self, rect, arr):
         if len(rect) + len(arr) == 0:
             return
@@ -203,145 +207,10 @@ class CanvasWidget(QWidget):
 
         self.update()
 
-    #     # предполагается что вспомагательные данные обновлены
-    # def to_positiv_coords(self):
-    #     plusx = plusy = 0
-    #     if self.min_x < 0:
-    #         plusx = -self.min_x
-    #     if self.min_y < 0:
-    #         plusy = -self.min_y
-    #
-    #     for k in self.canvas_rect.keys():
-    #         self.canvas_rect[k][0] += plusx
-    #         self.canvas_rect[k][1] += plusy
-    #     for i in range(len(self.canvas_arr)):
-    #         self.canvas_arr[i][0] += plusx
-    #         self.canvas_arr[i][1] += plusy
-    #     self.center = [plusx, plusy]
-    #     if self.triangle_paint:
-    #         self.c_points = list((i[0] + plusx, i[1] + plusy) for i in self.c_points)
-    #         self.c_point_bis = [self.c_point_bis[0] + plusx, self.c_point_bis[1] + plusy]
-    #         self.c_center_rect = [self.c_center_rect[0] + plusx, self.c_center_rect[1] + plusy]
-    #
-    #     if DEBUG:
-    #         print(f'\n{self.to_positiv_coords.__name__}:\t self.center: {self.center}\n'
-    #               f'self.canvas_rect: {self.canvas_rect}\n'
-    #               f'self.canvas_arr: {self.canvas_arr}\n'
-    #               f'self.c_point_bis: {self.c_point_bis}, self.c_center_rect: {self.c_center_rect}')
-    #
-    # # масштабируем
-    # def scaling(self):
-    #     for key in self.canvas_rect.keys():
-    #         self.canvas_rect[key] = list(map(lambda x: int(x * self.k), self.canvas_rect[key]))
-    #     for i in range(len(self.canvas_arr)):
-    #         self.canvas_arr[i] = list(map(lambda x: int(x * self.k), self.canvas_arr[i]))
-    #     self.center = list(map(lambda x: int(x * self.k), self.center))
-    #     if self.triangle_paint:
-    #         self.c_points = list((int(i[0] * self.k), int(i[1] * self.k)) for i in self.c_points)
-    #         self.c_point_bis = [int(self.c_point_bis[0] * self.k), int(self.c_point_bis[1] * self.k)]
-    #         self.c_center_rect = [int(self.c_center_rect[0] * self.k), int(self.c_center_rect[1] * self.k)]
-    #
-    #     if DEBUG:
-    #         print(f'\n{self.scaling.__name__}:\t self.center: {self.center}\n'
-    #               f'self.canvas_rect: {self.canvas_rect}\n'
-    #               f'self.canvas_arr: {self.canvas_arr}\n'
-    #               f'self.c_point_bis: {self.c_point_bis}, self.c_center_rect: {self.c_center_rect}')
-    #
-    # def on_focus(self):
-    #     minusx = min([i[0] for i in self.canvas_rect.values()] + [i[0] for i in self.canvas_arr])  # - self.frame_size
-    #     minusy = min([i[1] for i in self.canvas_rect.values()] + [i[1] for i in self.canvas_arr]) - self.frame_size
-    #     for k in self.canvas_rect.keys():
-    #         self.canvas_rect[k][0] -= minusx
-    #         self.canvas_rect[k][1] -= minusy
-    #     for i in range(len(self.canvas_arr)):
-    #         self.canvas_arr[i][0] -= minusx
-    #         self.canvas_arr[i][1] -= minusy
-    #     self.center[0] -= minusx
-    #     self.center[1] -= minusy
-    #     if self.triangle_paint:
-    #         self.c_points = list((i[0] - minusx, i[1] - minusy) for i in self.c_points)
-    #         self.c_point_bis = [self.c_point_bis[0] - minusx, self.c_point_bis[1] - minusy]
-    #         self.c_center_rect = [self.c_center_rect[0] - minusx, self.c_center_rect[1] - minusy]
-    #
-    #     if DEBUG:
-    #         print(f'\n{self.on_focus.__name__}: (minusx, minusy): {(minusx, minusy)}\n '
-    #               f'self.canvas_rect: {self.canvas_rect}\n'
-    #               f'self.canvas_arr: {self.canvas_arr}\n'
-    #               f'self.c_point_bis: {self.c_point_bis}, self.c_center_rect: {self.c_center_rect}')
-    #
-    # # переворачиваем ось Y вниз, как в экранную систему координат
-    # # после масштабирования!!!!!
-    # def reverse_y(self):
-    #     roof = self.real_y - self.frame_size
-    #     for k in self.canvas_rect.keys():
-    #         self.canvas_rect[k][1] = roof - self.canvas_rect[k][1]
-    #     for i in range(len(self.canvas_arr)):
-    #         self.canvas_arr[i][1] = roof - self.canvas_arr[i][1]
-    #     self.center[1] = roof - self.center[1]
-    #     if self.triangle_paint:
-    #         self.c_points = list((i[0], roof - i[1]) for i in self.c_points)
-    #         self.c_point_bis[1] = roof - self.c_point_bis[1]
-    #         self.c_center_rect[1] = roof - self.c_center_rect[1]
-    #
-    #     if DEBUG:
-    #         print(f'\n{self.reverse_y.__name__}:\t self.center: {self.center}\n'
-    #               f'self.canvas_rect: {self.canvas_rect}\n'
-    #               f'self.canvas_arr: {self.canvas_arr}\n'
-    #               f'self.c_point_bis: {self.c_point_bis}, self.c_center_rect: {self.c_center_rect}')
-    #
-    # def add_frame(self):
-    #     for k in self.canvas_rect.keys():
-    #         self.canvas_rect[k][0] += self.frame_size
-    #         self.canvas_rect[k][1] += self.frame_size
-    #     for i in range(len(self.canvas_arr)):
-    #         self.canvas_arr[i][0] += self.frame_size
-    #         self.canvas_arr[i][1] += self.frame_size
-    #     self.center[0] += self.frame_size
-    #     self.center[1] += self.frame_size
-    #     if self.triangle_paint:
-    #         self.c_points = list((i[0] + self.frame_size, i[1] + self.frame_size) for i in self.c_points)
-    #         self.c_point_bis = [self.c_point_bis[0] + self.frame_size, self.c_point_bis[1] + self.frame_size]
-    #         self.c_center_rect = [self.c_center_rect[0] + self.frame_size, self.c_center_rect[1] + self.frame_size]
-    #
-    #     if DEBUG:
-    #         print(f'\n{self.add_frame.__name__}:\t self.center: {self.center}\n'
-    #               f'self.canvas_rect: {self.canvas_rect}\n'
-    #               f'self.canvas_arr: {self.canvas_arr}\n'
-    #               f'self.c_point_bis: {self.c_point_bis}, self.c_center_rect: {self.c_center_rect}')
-    #
-    # def set_data(self, rect, arr):
-    #     if len(rect) + len(arr) == 0:
-    #         return
-    #     self.rectp = rect
-    #     self.arrp = arr
-    #     self.find_triangle_to_draw()
-    #
-    #     for k in self.rectp.keys():
-    #         self.canvas_rect[k] = list(self.rectp[k])
-    #     self.canvas_arr = list()
-    #     for i in range(len(self.arrp)):
-    #         self.canvas_arr.append(list(self.arrp[i]))
-    #
-    #     if DEBUG:
-    #         print(f'START {self.set_data.__name__}:\n'
-    #               f'self.canvas_rect: {self.canvas_rect}\n'
-    #               f'self.canvas_arr: {self.canvas_arr}')
-    #     self.update_sup_data()
-    #     self.update_koef()
-    #
-    #     self.to_positiv_coords()
-    #     self.scaling()
-    #     self.on_focus()
-    #     self.reverse_y()
-    #     self.add_frame()
-    #
-    #     if DEBUG:
-    #         print(f'END {self.set_data.__name__}:\t self.center: {self.center}\n'
-    #               f'self.canvas_rect: {self.canvas_rect}\n'
-    #               f'self.canvas_arr: {self.canvas_arr}\n'
-    #               f'self.c_points: {self.c_points}\n'
-    #               f'self.c_point_bis: {self.c_point_bis}, self.c_center_rect: {self.c_center_rect}\n' + '-' * 100)
-    #     self.update()
+        if self.triangle_paint:
+            return f'Координаты треугольника: {list(self.points)}\n Искомый угол (в градусах): {self.angle:.2f}'
+        else
+            return 'Недостаточно данных для ответа'
 
     # оси координат
     def paint_axis(self, qp):
