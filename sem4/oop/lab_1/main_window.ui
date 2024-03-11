@@ -320,6 +320,9 @@
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="styleSheet">
+          <string notr="true"/>
+         </property>
          <property name="text">
           <string>Масштабирование</string>
          </property>
@@ -619,6 +622,13 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="select_color_btn">
+         <property name="text">
+          <string>Выбрать цвет</string>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QPushButton" name="load_btn">

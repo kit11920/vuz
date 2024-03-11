@@ -55,13 +55,19 @@ OBJECTS_DIR   = ./
 SOURCES       = main.cpp \
 		main_window.cpp \
 		errors.cpp \
-		data_figure.cpp \
-		draw_figure.cpp moc_main_window.cpp
+		figure.cpp \
+		points_links.cpp \
+		one_point_link.cpp \
+		change_point.cpp \
+		select_act.cpp moc_main_window.cpp
 OBJECTS       = main.o \
 		main_window.o \
 		errors.o \
-		data_figure.o \
-		draw_figure.o \
+		figure.o \
+		points_links.o \
+		one_point_link.o \
+		change_point.o \
+		select_act.o \
 		moc_main_window.o
 DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/common/unix.conf \
@@ -151,12 +157,18 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		lab_1.pro main_window.h \
 		ui_main_window.h \
 		errors.h \
-		data_figure.h \
-		draw_figure.h main.cpp \
+		figure.h \
+		points_links.h \
+		one_point_link.h \
+		change_point.h \
+		select_act.h main.cpp \
 		main_window.cpp \
 		errors.cpp \
-		data_figure.cpp \
-		draw_figure.cpp
+		figure.cpp \
+		points_links.cpp \
+		one_point_link.cpp \
+		change_point.cpp \
+		select_act.cpp
 QMAKE_TARGET  = lab_1
 DESTDIR       = 
 TARGET        = lab_1
@@ -356,8 +368,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents main_window.h ui_main_window.h errors.h data_figure.h draw_figure.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp main_window.cpp errors.cpp data_figure.cpp draw_figure.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents main_window.h ui_main_window.h errors.h figure.h points_links.h one_point_link.h change_point.h select_act.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp main_window.cpp errors.cpp figure.cpp points_links.cpp one_point_link.cpp change_point.cpp select_act.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents main_window.ui $(DISTDIR)/
 
 
@@ -395,7 +407,11 @@ compiler_moc_header_clean:
 	-$(DEL_FILE) moc_main_window.cpp
 moc_main_window.cpp: main_window.h \
 		ui_main_window.h \
-		data_figure.h \
+		select_act.h \
+		figure.h \
+		points_links.h \
+		change_point.h \
+		one_point_link.h \
 		errors.h \
 		moc_predefs.h \
 		/usr/lib/qt5/bin/moc
@@ -424,29 +440,56 @@ compiler_clean: compiler_moc_predefs_clean compiler_moc_header_clean compiler_ui
 
 main.o: main.cpp main_window.h \
 		ui_main_window.h \
-		data_figure.h \
+		select_act.h \
+		figure.h \
+		points_links.h \
+		change_point.h \
+		one_point_link.h \
 		errors.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
 
 main_window.o: main_window.cpp main_window.h \
 		ui_main_window.h \
-		data_figure.h \
-		errors.h \
-		draw_figure.h
+		select_act.h \
+		figure.h \
+		points_links.h \
+		change_point.h \
+		one_point_link.h \
+		errors.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main_window.o main_window.cpp
 
 errors.o: errors.cpp errors.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o errors.o errors.cpp
 
-data_figure.o: data_figure.cpp data_figure.h \
+figure.o: figure.cpp figure.h \
+		points_links.h \
+		change_point.h \
+		one_point_link.h \
 		errors.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o data_figure.o data_figure.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o figure.o figure.cpp
 
-draw_figure.o: draw_figure.cpp draw_figure.h \
-		errors.h \
-		data_figure.h \
-		ui_main_window.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o draw_figure.o draw_figure.cpp
+points_links.o: points_links.cpp points_links.h \
+		change_point.h \
+		one_point_link.h \
+		errors.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o points_links.o points_links.cpp
+
+one_point_link.o: one_point_link.cpp one_point_link.h \
+		errors.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o one_point_link.o one_point_link.cpp
+
+change_point.o: change_point.cpp change_point.h \
+		one_point_link.h \
+		errors.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o change_point.o change_point.cpp
+
+select_act.o: select_act.cpp select_act.h \
+		figure.h \
+		points_links.h \
+		change_point.h \
+		one_point_link.h \
+		errors.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o select_act.o select_act.cpp
 
 moc_main_window.o: moc_main_window.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_main_window.o moc_main_window.cpp

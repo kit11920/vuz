@@ -1,13 +1,9 @@
-
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
  
 #include <QMainWindow>
 #include "ui_main_window.h"
-#include "data_figure.h"   
+#include "select_act.h" 
 
-// #define FILENAME "./rect_3d.txt"
-#define FILENAME "./pyramid.txt"
  
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -30,14 +26,15 @@ private slots:
 
     void on_load_btn_clicked();
 
-    err_t set_scene_and_draw();
+    void on_select_color_btn_clicked();
 
-    err_t check_figure_load();
+    void start_init_draw_data();
+
+    void set_scene();
 
 private:
     Ui::MainWindow *ui;
-    QGraphicsScene *scene;
-    figure_t figure;
+    action_data_t action_data;
+    // QGraphicsScene *scene;
+    draw_data_t draw_data;
 };
- 
-#endif // MAINWINDOW_H
