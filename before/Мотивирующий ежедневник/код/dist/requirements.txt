@@ -1,4 +1,0 @@
-sys
-sqlite3
-random
-PyQt5
