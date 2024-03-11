@@ -12,7 +12,7 @@ accuracy = 5
 
 
 if __name__ == '__main__':
-    x = 3.1
+    x = 0.54
     build_cmp_table(file_data, x, printing=DEBUG)
     np, nh = 5, 4
     p = search_root_newton(file_data, np, printing=DEBUG)

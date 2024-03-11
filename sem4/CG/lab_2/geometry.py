@@ -1,7 +1,7 @@
 import math as m
 
 
-# (x + a)**2 + (y + b)**2 = r**2
+# (x - a)**2 + (y - b)**2 = r**2
 # x = a + r * cos(degrees)
 # y = b + r * sin(degrees)
 # return circle = [[x, y] ... ]
@@ -37,14 +37,15 @@ def get_start_filling_figure(hyperbole_points, circle_points, a, b, r, c):
     # часть окружности которая формирует фигуру
     circle_part = list(filter(lambda point: (point[0] - a) ** 2 + (point[1] - b) ** 2 <= r ** 2
                                             and point[1] >= c / point[0], circle_points))
-    ind_reverse = -1
-    while circle_part[ind_reverse - 1][0] - circle_part[ind_reverse][0] < 0 and -ind_reverse < len(circle_part):
-        ind_reverse -= 1
-    ind_reverse += 1
-    if -ind_reverse < len(circle_part):
-        circle_part = circle_part[ind_reverse:] + circle_part[:ind_reverse]
+    if len(circle_part) > 0:
+        ind_reverse = -1
+        while circle_part[ind_reverse - 1][0] - circle_part[ind_reverse][0] < 0 and -ind_reverse < len(circle_part):
+            ind_reverse -= 1
+        ind_reverse += 1
+        if -ind_reverse < len(circle_part):
+            circle_part = circle_part[ind_reverse:] + circle_part[:ind_reverse]
 
-    figure.extend(circle_part)
+        figure.extend(circle_part)
 
     return figure
 

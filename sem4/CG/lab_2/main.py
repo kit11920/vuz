@@ -23,7 +23,7 @@ class MainWindow(QMainWindow):
         self.setGeometry(100, 100, 2000, 2000 - 700)
 
         # холст
-        self.canvas = CanvasWidget()
+        self.canvas = CanvasWidget(self)
         self.stackedWidget.addWidget(self.canvas)
         self.stackedWidget.setCurrentWidget(self.canvas)
         ##
@@ -35,6 +35,8 @@ class MainWindow(QMainWindow):
         self.step_back_btn.clicked.connect(self.canvas.step_back)
         self.reset_btn.clicked.connect(self.canvas.reset)
 
+        self.cx_dsp.valueChanged.connect(self.canvas.update)
+        self.cy_dsp.valueChanged.connect(self.canvas.update)
         ##
 
         # меню

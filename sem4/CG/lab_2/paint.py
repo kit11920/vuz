@@ -4,25 +4,29 @@ from PyQt5.QtCore import Qt, QPoint
 import math as m
 from geometry import *
 
-A, B, C, R = 1, 1, 1, 1
 
 SHOW_JUST_FIGURE = False
 MAX_COORD_X = 5
 MIN_COORD_X = -MAX_COORD_X
+A, B, C, R = 1, 1, 1, 1
 
 DEBUG = True
 
 
 class CanvasWidget(QWidget):
-    def __init__(self):
+    def __init__(self, parant):
         super().__init__()
+        self.parant = parant
         self.window_width = self.width()
         self.window_height = self.height()
 
+        self.parant.figure_params_le.setText(f'A = {A} B = {B} C = {C} R = {R}')
         self.grid_step = 0.5
         self.scale_figure_points = 100
         self.text_height = 25
 
+        self.center = (1, 1)
+        self.center_figure = (1, 1)
         self.circle = list()
         self.hyperbole = list()
         self.figure = list()
@@ -32,6 +36,8 @@ class CanvasWidget(QWidget):
         self.steps_back_data = list() # [[func, list_args_to_func] ...]
 
     def shift(self, dx, dy):
+        self.center_figure = shift(dx, dy, [self.center_figure])[0]
+        # print(self.center_figure)
         self.figure = shift(dx, dy, self.figure)
         self.circle = shift(dx, dy, self.circle)
         self.hyperbole = shift(dx, dy, self.hyperbole)
@@ -40,6 +46,7 @@ class CanvasWidget(QWidget):
         self.update()
         
     def rotate(self, cx, cy, angle):
+        self.center_figure = rotate(cx, cy, angle, [self.center_figure])[0]
         self.figure = rotate(cx, cy, angle, self.figure)
         self.circle = rotate(cx, cy, angle, self.circle)
         self.hyperbole = rotate(cx, cy, angle, self.hyperbole)
@@ -48,6 +55,7 @@ class CanvasWidget(QWidget):
         self.update()
 
     def scaling(self, cx, cy, kx, ky):
+        self.center_figure = scaling(cx, cy, kx, ky, [self.center_figure])[0]
         self.figure = scaling(cx, cy, kx, ky, self.figure)
         self.circle = scaling(cx, cy, kx, ky, self.circle)
         self.hyperbole = scaling(cx, cy, kx, ky, self.hyperbole)
@@ -148,6 +156,7 @@ class CanvasWidget(QWidget):
         self.set_start_circle_points()
         self.set_start_hyperbole_points()
         self.set_start_figure_points()
+        self.steps_back_data = list()
         self.update()
 
     def set_start_circle_points(self):
@@ -162,6 +171,7 @@ class CanvasWidget(QWidget):
         if len(self.hyperbole) == 0:
             self.set_start_hyperbole_points()
         self.figure = get_start_filling_figure(self.hyperbole, self.circle, A, B, R, C)
+        self.center_figure = (1.0, 1.0)
 
     def paint_circle(self, qp):
         if len(self.circle) == 0:
@@ -178,9 +188,24 @@ class CanvasWidget(QWidget):
     def paint_full_figure(self, qp):
         if len(self.figure) == 0:
             self.set_start_figure_points()
-        figure_points = list(map(lambda x: QPoint(*self.translate_to_computer_system(*x)), self.figure))
-        qp.setBrush(QBrush(Qt.red, Qt.CrossPattern))
-        qp.drawPolygon(*figure_points)
+        if len(self.figure) != 0:
+            figure_points = list(map(lambda x: QPoint(*self.translate_to_computer_system(*x)), self.figure))
+            qp.setBrush(QBrush(Qt.red, Qt.CrossPattern))
+            qp.drawPolygon(*figure_points)
+
+    def draw_center(self, qp, x, y):
+        center_coord = (x, y)
+        # center_coord = (self.parant.cx_dsp.value(), self.parant.cy_dsp.value())
+        self.center = self.translate_to_computer_system(*center_coord)
+        self.set_pen(qp, width=9, color=Qt.red)
+        qp.drawPoint(self.center[0], self.center[1])
+
+        self.set_pen(qp, width=3, color=Qt.black)
+        font = QFont()
+        font.setPixelSize(self.text_height)
+        qp.setFont(font)
+        dx, dy = -QFontMetrics(font).width('0') - 3, self.text_height + 1
+        qp.drawText(self.center[0] + dx, self.center[1] + dy, f'({center_coord[0]:.2f}, {center_coord[1]:.2f})')
 
     def paintEvent(self, event):
         self.window_width = self.width()
@@ -198,6 +223,15 @@ class CanvasWidget(QWidget):
 
         # рисуем сетку
         self.draw_axis_and_grid(qp, debug=False)
+
+        # центр вращения
+        center = self.parant.cx_dsp.value(), self.parant.cy_dsp.value()
+        self.draw_center(qp, *center)
+
+        # центр фигуры
+        self.draw_center(qp, *self.center_figure)
+        # self.set_pen(qp, width=9, color=Qt.black)
+        # qp.drawPoint(*self.translate_to_computer_system(*self.center_figure))
 
         # start figures
         self.set_pen(qp, width=3, color=Qt.blue)
