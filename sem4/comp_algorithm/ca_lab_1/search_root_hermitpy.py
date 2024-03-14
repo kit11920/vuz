@@ -1,5 +1,6 @@
 from prettytable import PrettyTable
 from work_data import read_data_search_root
+from plus_cod import find_root
 
 def print_reversed_tab_sep_diff_hermit(data):
     tab = PrettyTable()
@@ -35,10 +36,14 @@ def sep_diff_hermit(tab, begi, endi):
 
 def build_reversed_tab_sep_diff_n_hermit(data):
     tab = list()
-    for i in range(len(data)):
-        for _ in range(3):
-            tab.append([data[i][1], data[i][0], 1 / data[i][2], data[i][3] / (data[i][2] ** 3)])
-    sep_diff_hermit(tab, 0, len(tab) - 1)
+    try:
+        for i in range(len(data)):
+            for _ in range(3):
+                tab.append([data[i][1], data[i][0], 1 / data[i][2], data[i][3] / (data[i][2] ** 3)])
+        sep_diff_hermit(tab, 0, len(tab) - 1)
+    except ZeroDivisionError:
+        tab = []
+        # pass
     return tab
 
 
@@ -57,11 +62,15 @@ def count_polynom_hermit(tab, x):
 def search_root_polynom_hermit(data, n, printing=True):
     x = 0
     tab = build_reversed_tab_sep_diff_n_hermit(data)
-    if printing:
-        print('Поиск корня (полином Эрмита)')
-        print_reversed_tab_sep_diff_hermit(tab)
+    if len(tab) != 0:
+        if printing:
+            print('Поиск корня (полином Эрмита)')
+            print_reversed_tab_sep_diff_hermit(tab)
 
-    polynom = count_polynom_hermit(tab, x)
+        polynom = count_polynom_hermit(tab, x)
+    else:
+        data = [line[:2] for line in data]
+        polynom = find_root(data)
 
     if printing:
         print(f'H{n}({x}) = {polynom:.5f}')
