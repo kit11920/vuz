@@ -3,7 +3,7 @@ from newton import polynom_newton
 EPS = 1e-5
 
 
-def bin_serch_zero_y(data, x1, y1, x2, y2):
+def bin_search_zero_y(data, x1, y1, x2, y2):
     # print(x1, y1, x2, y2)
     n = 5
     cx = (x1 + x2) / 2
@@ -11,9 +11,9 @@ def bin_serch_zero_y(data, x1, y1, x2, y2):
     if abs(cy) < EPS:
         return cx
     elif cy * y1 < 0:
-        return bin_serch_zero_y(data, x1, y1, cx, cy)
+        return bin_search_zero_y(data, x1, y1, cx, cy)
     else:
-        return bin_serch_zero_y(data, cx, cy, x2, y2)
+        return bin_search_zero_y(data, cx, cy, x2, y2)
 
 
 def find_root(data):
@@ -25,6 +25,6 @@ def find_root(data):
         if i2 >= len(data):
             raise Exception('MY_ERROR: find_root: Wrong_data')
 
-    return bin_serch_zero_y(data, data[i1][0], data[i1][1], data[i2][0], data[i2][1])
+    return bin_search_zero_y(data, data[i1][0], data[i1][1], data[i2][0], data[i2][1])
 
 

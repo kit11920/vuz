@@ -70,7 +70,6 @@ class MainWindow(QMainWindow):
 
         self.canvas.scaling(cx, cy, kx, ky)
 
-
     def show_info(self):
         print('show')
         self.info_widget.show()

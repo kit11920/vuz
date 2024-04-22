@@ -11,8 +11,8 @@ def build_cmp_table(file_data, x, printing=True):
     for n in range(1, 5 + 1):
         data = read_short_data(file_data, x, n)
         p = polynom_newton(data, x, n, printing)
-        h = polynom_hermit(data, x, n, printing)
-
+        # h = polynom_hermit(data, x, n, printing)
+        h = 0
         tab.add_row([n, f'{p:.5f}', f'{h:.5f}'])
     print()
     print(f'x = {x}')

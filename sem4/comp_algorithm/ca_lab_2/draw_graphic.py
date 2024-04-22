@@ -21,6 +21,8 @@ def draw_graphic(data, print_tab=False, printing=False):
     if len_data_gt_4:
         second_derivative_newton_n3_beg = second_derivative_newton_n3(data, data[0][0])
         second_derivative_newton_n3_end = second_derivative_newton_n3(data, data[-1][0])
+        # second_derivative_newton_n3_beg = 6 * data[0][0]
+        # second_derivative_newton_n3_end = 6 * data[-1][0]
     x_beg, x_end = data[0][0], data[-1][0]
     x_coord = np.arange(x_beg, x_end + STEP_X, STEP_X)
     for x in x_coord:

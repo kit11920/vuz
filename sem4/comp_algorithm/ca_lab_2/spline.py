@@ -52,18 +52,18 @@ def calc_c_coefs(x_values, y_values, beg, end):
     return c_values
 
 
-def calc_d_coefs(x_values, c_values):
+def calc_d_coefs(x_values, c_values, end):
     n = len(x_values)
     d_values = [0] * (n - 1)
     for i in range(n - 2):
         d_values[i] = (c_values[i + 1] - c_values[i]) / (3 * h_i(x_values, i + 1))
-    d_values[-1] = - c_values[-1] / (3 * h_i(x_values, -1))
+    d_values[-1] = (end / 2 - c_values[-1]) / (3 * h_i(x_values, -1))
 
     # print(f'd_values = {d_values}')
     return d_values
 
 
-def calc_b_coefs(x_values, y_values, c_values):
+def calc_b_coefs(x_values, y_values, c_values, end):
     n = len(x_values)
     b_values = [0] * (n - 1)
 
@@ -72,7 +72,7 @@ def calc_b_coefs(x_values, y_values, c_values):
         b_values[i] = (y_values[i + 1] - y_values[i]) / hi - \
                       1 / 3 * hi * (c_values[i + 1] + 2 * c_values[i])
     b_values[-1] = (y_values[-1] - y_values[-2]) / h_i(x_values, -1) - \
-                   h_i(x_values, -1) / 3 * 2 * c_values[-1]
+                   h_i(x_values, -1) / 3 * (end / 2 + 2 * c_values[-1])
 
     # print(f'c_values = {c_values}')
     # print(f'b_values = {b_values}')
@@ -82,14 +82,14 @@ def calc_b_coefs(x_values, y_values, c_values):
 def calc_abcd_coefs(x_values, y_values, beg, end):
     a_values = calc_a_coefs(y_values)
     c_values = calc_c_coefs(x_values, y_values, beg, end)
-    b_values = calc_b_coefs(x_values, y_values, c_values)
-    d_values = calc_d_coefs(x_values, c_values)
+    b_values = calc_b_coefs(x_values, y_values, c_values, end)
+    d_values = calc_d_coefs(x_values, c_values, end)
 
     return a_values, b_values, c_values, d_values
 
 
 def find_index_xi(x_values, x):
-    n = len(x_values)
+    n = len(x_values) - 1
     ind = 1
     while ind < n and x_values[ind] < x:
         ind += 1

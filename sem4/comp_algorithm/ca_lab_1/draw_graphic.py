@@ -17,7 +17,7 @@ accuracy = 5
 
 
 def draw_graphic(file_data, n, printing=True):
-    # plt.figure(figsize=(8, 8))
+    plt.figure(figsize=(8, 8))
     data = read_data(file_data)
     newton_data, hermit_data = list(), list()
 
@@ -32,11 +32,11 @@ def draw_graphic(file_data, n, printing=True):
             hermit_data.append([x, y])
         else:
             short_data = read_short_data(file_data, x, n)
-            p = polynom_newton(short_data, x, n, printing)
-            h = polynom_hermit(short_data, x, n, printing)
+            p = polynom_newton(short_data, x, n, printing=True)
+            # h = polynom_hermit(short_data, x, n, printing)
 
             newton_data.append([x, p])
-            hermit_data.append([x, h])
+            hermit_data.append([x, p])
 
     # Таблица
     tab = PrettyTable()
