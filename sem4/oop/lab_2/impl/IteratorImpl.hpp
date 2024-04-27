@@ -1,0 +1,189 @@
+#pragma once
+#include <memory>
+#include <algorithm>
+#include <ctime>
+#include "Iterator.h"
+#include "Exceptions.h"
+
+#include <iterator>
+
+using namespace std;
+
+template <TypeForMatrix T>
+Iterator<T>::Iterator(const Iterator<T>& iter) noexcept: BaseIterator<T>::BaseIterator(iter) 
+{
+    this->pdata = iter.pdata;
+    this->size = iter.size;
+    this->index = iter.index;
+}
+
+template <TypeForMatrix T>
+Iterator<T>::Iterator(Iterator<T>&& iter) noexcept: BaseIterator<T>::BaseIterator(iter)
+{
+    this->pdata = iter.pdata;
+    this->size = iter.size;
+    this->index = iter.index;
+}
+
+template <TypeForMatrix T>
+Iterator<T>::Iterator(const Matrix<T> &mtrx) noexcept   
+{
+    std::weak_ptr<T[]> tmpdata = mtrx.data;
+    this->pdata = tmpdata;
+    this->size = mtrx.rows * mtrx.cols;
+    this->index = 0;
+}
+
+template <TypeForMatrix T>
+T& Iterator<T>::operator*()
+{
+    this->expride_exept_check(__LINE__);
+    this->index_exept_check(__LINE__);
+
+
+    shared_ptr<T[]> a = this->pdata.lock();
+    return *(a.get() + this->index);
+}
+
+// template <TypeForMatrix T>
+// const T& Iterator<T>::operator*() const
+// {
+
+//     expride_exept_check(__LINE__);
+//     index_exept_check(__LINE__);
+
+//     const shared_ptr<T[]> a = pdata.lock();
+//     return *(a.get() + index);
+// };
+
+template <TypeForMatrix T>
+T* Iterator<T>::operator->()
+{
+    shared_ptr<T[]> a = this->pdata.lock();
+    return a.get() + this->index;
+}
+
+// template <TypeForMatrix T>
+// const T* Iterator<T>::operator->() const
+// {
+//     const shared_ptr<T[]> a = pdata.lock();
+//     return a.get() + index;
+// }
+
+// template <TypeForMatrix T>
+// Iterator<T>::operator bool() const noexcept
+// {
+//     return !pdata.expired() && index < size;
+// }
+
+template <TypeForMatrix T>
+Iterator<T>::difference_type Iterator<T>::operator -(const Iterator<T> &other)
+{
+    return other.index - this->index;
+}
+
+template <TypeForMatrix T>
+Iterator<T>::difference_type Iterator<T>::distance(const Iterator<T> &other)
+{
+    return other.index - this->index;
+}
+
+template <TypeForMatrix T>
+Iterator<T> &Iterator<T>::operator++() noexcept
+{
+
+    ++this->index;
+    return *this;
+}
+
+template <TypeForMatrix T>
+Iterator<T> Iterator<T>::operator++(int) noexcept
+{
+    Iterator<T> tmp(*this);
+    ++this->index;
+    return tmp;
+}
+
+template <TypeForMatrix T>
+Iterator<T> &Iterator<T>::operator--() noexcept
+{
+    --this->index;
+    return *this;
+}
+
+template <TypeForMatrix T>
+Iterator<T> Iterator<T>::operator--(int) noexcept
+{
+    Iterator<T> tmp(*this);
+    --this->index;
+    return tmp;
+}
+
+template <TypeForMatrix T>
+Iterator<T> Iterator<T>::operator+(const difference_type ind) const noexcept
+{
+    Iterator<T> tmp(*this);
+    tmp += ind;
+    return tmp;
+}
+
+template <TypeForMatrix T>
+Iterator<T> Iterator<T>::operator-(const difference_type ind) const noexcept
+{
+    Iterator<T> tmp(*this);
+    tmp -= ind;
+    return tmp;
+}
+
+template <TypeForMatrix T>
+Iterator<T> &Iterator<T>::operator+=(const difference_type ind) noexcept
+{
+    this->index += ind;
+    return *this;
+}
+
+template <TypeForMatrix T>
+Iterator<T> &Iterator<T>::operator-=(const difference_type ind) noexcept
+{
+    this->index -= ind;
+    return *this;
+}
+
+// template <TypeForMatrix T>
+// const T& Iterator<T>::operator [](size_t ind) const
+// {
+//     const shared_ptr<T[]> tmp = pdata.lock();
+//     return *(tmp.get() + this->index + ind);
+// }
+
+template <TypeForMatrix T>
+T& Iterator<T>::operator [](size_t ind)
+{
+    shared_ptr<T[]> tmp = this->pdata.lock();
+    return *(tmp.get() + this->index + ind);
+}
+
+
+
+
+// template <TypeForMatrix T>
+// void Iterator<T>::expride_exept_check(const size_t line) const
+// {
+//     if (pdata.expired())
+//     {
+//         time_t curTime = time(NULL);
+//         throw ExpiredException(ctime(&curTime), __FILE__, line,
+//                                typeid(*this).name(), __func__);
+//     }
+// }
+
+// template <TypeForMatrix T>
+// void Iterator<T>::index_exept_check(const size_t line) const
+// {
+//     if (index >= size)
+//     {
+//         time_t curTime = time(NULL);
+//         throw IterIndexException(ctime(&curTime), __FILE__, line, typeid(*this).name(), __func__);
+//     }
+// }
+
