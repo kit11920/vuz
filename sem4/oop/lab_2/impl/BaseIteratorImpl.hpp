@@ -36,8 +36,8 @@ template <TypeForMatrix T>
 const T& BaseIterator<T>::operator*() const
 {
 
-    expride_exept_check(__LINE__);
-    index_exept_check(__LINE__);
+    expride_exeption(__LINE__);
+    index_exeption(__LINE__);
 
     const shared_ptr<T[]> a = pdata.lock();
     return *(a.get() + index);
@@ -119,7 +119,7 @@ BaseIterator<T>::operator bool() const noexcept
 
 
 template <TypeForMatrix T>
-void BaseIterator<T>::expride_exept_check(const size_t line) const
+void BaseIterator<T>::expride_exeption(const size_t line) const
 {
     if (pdata.expired())
     {
@@ -130,7 +130,7 @@ void BaseIterator<T>::expride_exept_check(const size_t line) const
 }
 
 template <TypeForMatrix T>
-void BaseIterator<T>::index_exept_check(const size_t line) const
+void BaseIterator<T>::index_exeption(const size_t line) const
 {
     if (index >= size)
     {

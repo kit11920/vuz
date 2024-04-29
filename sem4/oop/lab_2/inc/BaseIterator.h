@@ -28,8 +28,8 @@ protected:
     size_t index = 0;
     size_t size = 0;
 
-	void expride_exept_check(const size_t line) const;
-    void index_exept_check(const size_t line) const;	
+	void expride_exeption(const size_t line) const;
+    void index_exeption(const size_t line) const;	
 };
 
 

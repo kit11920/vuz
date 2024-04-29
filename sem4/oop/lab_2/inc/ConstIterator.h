@@ -25,13 +25,13 @@ public:
 	ConstIterator(const ConstIterator<T>&& iter) noexcept;
     ConstIterator(const Iterator<T>& iter) noexcept;
     ConstIterator(const ConstIterator<T>& iter) noexcept;
-	explicit ConstIterator(const Matrix<T> &mtrx) noexcept;
+	explicit ConstIterator(const Matrix<T> &mtrx, const size_t index = 0) noexcept;
 
 	// operator bool() const noexcept;
 
 	reference operator*() const;
 	pointer operator->() const;
-	reference operator[](const difference_type ind) const;
+	reference operator[](const difference_type ind) const noexcept;
 
 	difference_type distance(const ConstIterator<T> &other) const;
 	difference_type operator -(const ConstIterator<T> &other) const;
@@ -51,7 +51,7 @@ public:
 	ConstIterator<T> &operator=(const ConstIterator<T> &iter);
 	ConstIterator<T> &operator=(const ConstIterator<T> &&iter);
 
-	auto operator<=>(const ConstIterator<T> &other) const {return this->index <=> other.index;};
+	auto operator<=>(const ConstIterator<T> &other) const noexcept {return this->index <=> other.index;};
 
 	// const T& operator [](size_t ind) const;
 };

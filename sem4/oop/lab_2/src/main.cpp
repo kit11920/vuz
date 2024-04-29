@@ -8,9 +8,9 @@ using namespace std;
 
 int main(void)
 {
-    // container_test();
+    container_test();
     
-    // constructors_test();
+    constructors_test();
 
     iterator_test();
 

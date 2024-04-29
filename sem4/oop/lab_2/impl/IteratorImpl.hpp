@@ -28,19 +28,19 @@ Iterator<T>::Iterator(Iterator<T>&& iter) noexcept //: BaseIterator<T>::BaseIter
 }
 
 template <TypeForMatrix T>
-Iterator<T>::Iterator(const Matrix<T> &mtrx) noexcept   
+Iterator<T>::Iterator(const Matrix<T> &mtrx, const size_t index) noexcept   
 {
     std::weak_ptr<T[]> tmpdata = mtrx.data;
     this->pdata = tmpdata;
     this->size = mtrx.rows * mtrx.cols;
-    this->index = 0;
+    this->index = index;
 }
 
 template <TypeForMatrix T>
 Iterator<T>::reference Iterator<T>::operator*() const
 {
-    this->expride_exept_check(__LINE__);
-    this->index_exept_check(__LINE__);
+    this->expride_exeption(__LINE__);
+    this->index_exeption(__LINE__);
 
     shared_ptr<T[]> a = this->pdata.lock();
     return *(a.get() + this->index);
@@ -50,8 +50,8 @@ Iterator<T>::reference Iterator<T>::operator*() const
 // const T& Iterator<T>::operator*() const
 // {
 
-//     expride_exept_check(__LINE__);
-//     index_exept_check(__LINE__);
+//     expride_exeption(__LINE__);
+//     index_exeption(__LINE__);
 
 //     const shared_ptr<T[]> a = pdata.lock();
 //     return *(a.get() + index);
@@ -60,8 +60,8 @@ Iterator<T>::reference Iterator<T>::operator*() const
 template <TypeForMatrix T>
 Iterator<T>::pointer Iterator<T>::operator->() const
 {
-    this->expride_exept_check(__LINE__);
-    this->index_exept_check(__LINE__);
+    this->expride_exeption(__LINE__);
+    this->index_exeption(__LINE__);
     // shared_ptr<T[]> a = this->pdata.lock();
     // return a.get() + this->index;
 
@@ -72,7 +72,7 @@ Iterator<T>::pointer Iterator<T>::operator->() const
 }
 
 template <TypeForMatrix T>
-Iterator<T>::reference Iterator<T>::operator[](const Iterator<T>::difference_type ind) const
+Iterator<T>::reference Iterator<T>::operator[](const Iterator<T>::difference_type ind) const noexcept
 {
     shared_ptr<T[]> tmp = this->pdata.lock();
     return *(tmp.get() + this->index + ind);
@@ -92,13 +92,13 @@ Iterator<T>::reference Iterator<T>::operator[](const Iterator<T>::difference_typ
 // }
 
 template <TypeForMatrix T>
-Iterator<T>::difference_type Iterator<T>::operator -(const Iterator<T> &other) const
+Iterator<T>::difference_type Iterator<T>::operator -(const Iterator<T> &other) const noexcept
 {
     return other.index - this->index;
 }
 
 template <TypeForMatrix T>
-Iterator<T>::difference_type Iterator<T>::distance(const Iterator<T> &other) const
+Iterator<T>::difference_type Iterator<T>::distance(const Iterator<T> &other) const noexcept
 {
     return other.index - this->index;
 }
@@ -208,7 +208,7 @@ Iterator<T> &Iterator<T>::operator=(const Iterator<T> &&iter)
 
 
 // template <TypeForMatrix T>
-// void Iterator<T>::expride_exept_check(const size_t line) const
+// void Iterator<T>::expride_exeption(const size_t line) const
 // {
 //     if (pdata.expired())
 //     {
@@ -219,7 +219,7 @@ Iterator<T> &Iterator<T>::operator=(const Iterator<T> &&iter)
 // }
 
 // template <TypeForMatrix T>
-// void Iterator<T>::index_exept_check(const size_t line) const
+// void Iterator<T>::index_exeption(const size_t line) const
 // {
 //     if (index >= size)
 //     {

@@ -27,8 +27,8 @@ class Matrix: public BaseMatrix
     friend class ConstReverseIterator<T>;
 public:
     #pragma region Constructors
-    Matrix() noexcept: BaseMatrix() {};
-    Matrix(const size_t rows, const size_t cols);
+    Matrix() noexcept = default;  // NEW Определение с BaseMatrix() {} не нужно
+    Matrix(const size_t cols, const size_t rows);
 
     Matrix(Matrix<T> &&mtr) noexcept;
     explicit Matrix(const Matrix<T> &mtr);
@@ -37,10 +37,12 @@ public:
     template <Convertable<T> U> // from U to T
     explicit Matrix(const Matrix<U> &mtr);
     template <Convertable<T> U> 
+    Matrix(const U **mtrx, const size_t cols, const size_t rows); // NEW конструктор для СИ матрицы
+    template <Convertable<T> U> 
     Matrix(initializer_list<initializer_list<U>> lst);
 
-    template <ContainerMatrix<T> U>  
-    Matrix(const U& con, const size_t rows, const size_t cols);
+    template <ContainerConvertableAssignable<T> U>  
+    Matrix(const U& con, const size_t cols, const size_t rows = 0); // NEW rows - по умолчанию
 
     #pragma endregion Constructors
 
@@ -93,17 +95,6 @@ public:
     bool is_equal(const Matrix<T> &mtrx) const noexcept;
     bool is_not_equal(const Matrix<T> &mtrx) const noexcept;
     #pragma endregion Comparison
-    
-	#pragma region ExceptionChecks
-    void rows_index_except_check(size_t ind_row, const char *filename, const size_t line) const;
-    void col_index_except_check(size_t ind_row, const char *filename, const size_t line) const;
-    template <Convertable<T> U> 
-    void multiplicating_except_check(const Matrix<U> &mtrx, const char *filename, const size_t line) const;
-    template <Convertable<T> U> 
-    void same_size_except_check(const Matrix<U> &mtrx, const char *filename, const size_t line) const;
-    void square_except_check(const char *filename, const size_t line) const;
-    void zero_det_except_check(const char *filename, const size_t line) const;
-    #pragma endregion ExceptionChecks
 
     #pragma region Unary
     Matrix<T> operator-() const;
@@ -115,7 +106,7 @@ public:
     template <Convertable<T> U> 
     decltype(auto) operator+(const U &val) const;
     template <Convertable<T> U> 
-    decltype(auto) operator+=(const Matrix<U> &mtr);
+    Matrix<T> &operator+=(const Matrix<U> &mtr);
     template <Convertable<T> U> 
     decltype(auto)  add(const Matrix<U> &mtr) const;
     #pragma endregion Add
@@ -126,7 +117,7 @@ public:
     template <Convertable<T> U> 
     decltype(auto) operator-(const U &val) const; 
     template <Convertable<T> U> 
-    decltype(auto) operator-=(const Matrix<U> &mtr);
+    Matrix<T> &operator-=(const Matrix<U> &mtr);
     template <Convertable<T> U> 
     decltype(auto) sub(const Matrix<U> &mtr) const;
     #pragma endregion Sub
@@ -139,7 +130,7 @@ public:
     template <Convertable<T> U> 
     decltype(auto) operator*(const U &val) const;
     template <Convertable<T> U> 
-    decltype(auto) operator*=(const Matrix<U> &mtr);
+    Matrix<T> &operator*=(const Matrix<U> &mtr);
     template <Convertable<T> U> 
     decltype(auto) mul(const Matrix<U> &mtr) const;
     #pragma endregion Mul
@@ -148,18 +139,22 @@ public:
     template <Convertable<T> U> 
     decltype(auto) operator/(const Matrix<U> &mtr) const; 
     template <Convertable<T> U> 
+    decltype(auto) operator%(const Matrix<U> &mtr) const; 
+    template <Convertable<T> U> 
     decltype(auto) operator/(const U &val) const;
     template <Convertable<T> U> 
-    decltype(auto) operator/=(const Matrix<U> &mtr);
+    Matrix<T> &operator/=(const Matrix<U> &mtr);
     template <Convertable<T> U> 
     decltype(auto) div(const Matrix<U> &mtr) const;
     #pragma endregion Div
 
     #pragma region SpecificOperations
-    void make_zero_matrix() noexcept;
-    void make_identity();
+    static Matrix<T> make_zero_matrix(const size_t cols, const size_t rows);
+    static Matrix<T> make_identity_matrix(const size_t size);
+    void convert_to_zero_matrix() noexcept;
+    void convert_to_identity() noexcept;
     Matrix<T> transpose() const;
-    decltype(auto) get_det() const;
+    T get_det() const;
     Matrix<T> inverted() const;
     #pragma endregion SpecificOperations
     
@@ -192,14 +187,14 @@ public:
 
             }
 
-            return *(arr.get() + index_this_row * lenarr + ind);
+            return *(arr.lock().get() + index_this_row * lenarr + ind);
         }
 
         ~MatrixLine() = default;
 
 
     private:
-        std::shared_ptr<T[]> arr;
+        std::weak_ptr<T[]> arr;
         size_t index_this_row;
         size_t lenarr = 0;
     };
@@ -215,6 +210,17 @@ public:
 protected:
     void allocate(const size_t rows, const size_t cols);
     void exclude_copy(Matrix<T> &dst, const size_t ex_row, const size_t ex_col) const;
+
+    #pragma region ExceptionChecks
+    void rows_index_exception(size_t ind_row, const char *filename, const size_t line) const;
+    void col_index_exception(size_t ind_row, const char *filename, const size_t line) const;
+    template <Convertable<T> U> 
+    void multiplicating_exception(const Matrix<U> &mtrx, const char *filename, const size_t line) const;
+    template <Convertable<T> U> 
+    void same_size_exception(const Matrix<U> &mtrx, const char *filename, const size_t line) const;
+    void square_exception(const char *filename, const size_t line) const;
+    void zero_det_exception(const char *filename, const size_t line) const;
+    #pragma endregion ExceptionChecks
 
 private:
     std::shared_ptr<T[]> data;

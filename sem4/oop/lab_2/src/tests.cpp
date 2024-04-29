@@ -26,7 +26,7 @@ void g(Con&, T&)
 }
 
 template <typename Con, typename T>
-requires TypeForMatrix<T> && ContainerMatrix<Con, T>
+requires TypeForMatrix<T> && ContainerConvertableAssignable<Con, T>
 void g(Con&, T&)
 {
     cout << "It is container!!" << endl;
@@ -41,36 +41,33 @@ void container_test(void)
 
 void constructors_test(void)
 {
-    // cout << "Matrix()";
-    Matrix<int> m0;
-
-    // cout << "Matrix(const initializer_list<initializer_list<U>> lst)";
-    Matrix<int> m1 = {{1, 2, 3}, {4, 5, 6}};
-    m1 = m1 + 1;
-    m1 = 1 + m1;
-    print_mtrx(m1);
-
-    Matrix<int> m2(m1);
-
-    Matrix<int> me(2, 3);
-    me = m1 + m2;
-    me = me + Matrix{{1, 2, 3}, {4, 5, 6}};
-    Matrix md = {{0.1, 0.2, 0.3}, {0.4, 0.5, 0.6}};
-    md = md + m1;
-    md = me;
-    md += md;
-    m1 *= m1;
-    md = md + 1;
-    md.transpose();
-    for (auto elem: m1)
-            cout << elem << " ";
-    cout << endl;
-
-    Matrix m3(move(m2));
-
     try
     {
-        Matrix<int> me(1, 2);
+        // cout << "Matrix(const initializer_list<initializer_list<U>> lst)";
+        Matrix<int> m1 = Matrix<int>::make_identity_matrix(3); //{{1, 2, 3}, {4, 5, 6}};
+        // m1 = m1 + 1;
+        // m1 = 1 + m1;
+        print_mtrx(m1);
+
+        m1 = {{1, 2, 3}, {4, 5, 6}};
+
+        Matrix<int> m2(m1);
+
+        Matrix<int> me(2, 3);
+        me = m1 + m2;
+        me = me + Matrix{{1, 2, 3}, {4, 5, 6}};
+        Matrix md = {{0.1, 0.2, 0.3}, {0.4, 0.5, 0.6}};
+        md = md + m1;
+        md = me;
+        md += md;
+        m1 *= m1;
+        md = md + 1;
+        md.transpose();
+        for (auto elem: m1)
+            cout << elem << " ";
+        cout << endl;   
+
+        Matrix m3(move(m2));
 
         m1[1][2] = 10;
         cout << "m1[1][2] = " << m1[1][2] << endl;

@@ -26,19 +26,22 @@ ReverseIterator<T>::ReverseIterator(const ReverseIterator<T>&& iter) noexcept: B
 }
 
 template <TypeForMatrix T>
-ReverseIterator<T>::ReverseIterator(const Matrix<T> &mtrx) noexcept   
+ReverseIterator<T>::ReverseIterator(const Matrix<T> &mtrx, const size_t index) noexcept   
 {
     std::weak_ptr<T[]> tmpdata = mtrx.data;
     this->pdata = tmpdata;
     this->size = mtrx.size();
-    this->index = this->size - 1;
+    if (index == SIZE_MAX)
+        this->index = this->size - 1;
+    else
+        this->index = index;
 }
 
 template <TypeForMatrix T>
 ReverseIterator<T>::reference ReverseIterator<T>::operator*() const
 {
-    this->expride_exept_check(__LINE__);
-    this->index_exept_check(__LINE__);
+    this->expride_exeption(__LINE__);
+    this->index_exeption(__LINE__);
 
     shared_ptr<T[]> a = this->pdata.lock();
     return *(a.get() + this->index);
@@ -48,8 +51,8 @@ ReverseIterator<T>::reference ReverseIterator<T>::operator*() const
 // const T& ReverseIterator<T>::operator*() const
 // {
 
-//     expride_exept_check(__LINE__);
-//     index_exept_check(__LINE__);
+//     expride_exeption(__LINE__);
+//     index_exeption(__LINE__);
 
 //     const shared_ptr<T[]> a = pdata.lock();
 //     return *(a.get() + index);
@@ -60,15 +63,15 @@ ReverseIterator<T>::pointer ReverseIterator<T>::operator->() const
 {
     // shared_ptr<T[]> a = this->pdata.lock();
     // return a.get() + this->index;
-    this->expride_exept_check(__LINE__);
-    this->index_exept_check(__LINE__);
+    this->expride_exeption(__LINE__);
+    this->index_exeption(__LINE__);
 
     shared_ptr<T[]> a = this->pdata.lock();
     return {a->shared_from_this(), a.get() + this->index};
 }
 
 template <TypeForMatrix T>
-ReverseIterator<T>::reference ReverseIterator<T>::operator[](const ReverseIterator<T>::difference_type ind) const
+ReverseIterator<T>::reference ReverseIterator<T>::operator[](const ReverseIterator<T>::difference_type ind) const noexcept
 {
     shared_ptr<T[]> tmp = this->pdata.lock();
     return *(tmp.get() + this->index + ind);
@@ -187,7 +190,7 @@ ReverseIterator<T> &ReverseIterator<T>::operator=(const ReverseIterator<T> &&ite
 
 
 // template <TypeForMatrix T>
-// void ReverseIterator<T>::expride_exept_check(const size_t line) const
+// void ReverseIterator<T>::expride_exeption(const size_t line) const
 // {
 //     if (pdata.expired())
 //     {
@@ -198,7 +201,7 @@ ReverseIterator<T> &ReverseIterator<T>::operator=(const ReverseIterator<T> &&ite
 // }
 
 // template <TypeForMatrix T>
-// void ReverseIterator<T>::index_exept_check(const size_t line) const
+// void ReverseIterator<T>::index_exeption(const size_t line) const
 // {
 //     if (index >= size)
 //     {

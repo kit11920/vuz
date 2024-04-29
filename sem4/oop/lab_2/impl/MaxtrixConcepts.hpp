@@ -50,7 +50,7 @@ concept Container = requires(C con)
 };
 
 template <typename Con, typename T>
-concept ContainerMatrix = Container<Con> && 
+concept ContainerConvertableAssignable = Container<Con> && 
                         Convertable<typename Con::value_type, T> &&
                         Assignable<typename Con::value_type, T>; // && RandomAccessIterator<typename Con::iterator>;
 

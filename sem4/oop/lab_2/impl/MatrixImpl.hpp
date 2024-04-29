@@ -12,7 +12,7 @@ using namespace std;
 
 #pragma region Constructors
 template <TypeForMatrix T>
-Matrix<T>::Matrix(const size_t rows, const size_t cols): BaseMatrix(rows, cols)
+Matrix<T>::Matrix(const size_t cols, const size_t rows): BaseMatrix(rows, cols)
 {
     if (!rows and !cols) return;
 
@@ -75,6 +75,18 @@ Matrix<T>::Matrix(const Matrix<U> &mtr): BaseMatrix(mtr.rows, mtr.cols)
 
 template <TypeForMatrix T>
 template <Convertable<T> U>
+Matrix<T>::Matrix(const U **mtrx, const size_t cols, const size_t rows): BaseMatrix(rows, cols)
+{
+    if (!rows and !cols) return;
+
+    allocate(rows, cols);
+    for (size_t i = 0; i < rows; ++i)
+        for (size_t j = 0; j < cols; ++j)
+            data[i * cols + j] = mtrx[i][j];
+}
+
+template <TypeForMatrix T>
+template <Convertable<T> U>
 Matrix<T>::Matrix(const initializer_list<initializer_list<U>> lst): BaseMatrix(lst.size(), lst.begin()->size())
 {
     if (!rows and !cols) return;
@@ -92,17 +104,22 @@ Matrix<T>::Matrix(const initializer_list<initializer_list<U>> lst): BaseMatrix(l
 }
 
 template <TypeForMatrix T>
-template <ContainerMatrix<T> U>  
-Matrix<T>::Matrix(const U& con, const size_t rows, const size_t cols)
+template <ContainerConvertableAssignable<T> U>  
+Matrix<T>::Matrix(const U& con, const size_t cols, const size_t rows)
 {
     if (!rows and !cols) return;
+    
+    this->cols = cols;
+    if (rows == 0)
+        this->rows = (con.end() - con.begin()) / cols;
+    else
+        this->rows = rows;
 
-    allocate(rows, cols);
-
-    size_t  i = 0;
-    for (auto elem: con)
+    allocate(this->rows, this->cols);
+    size_t i = 0;
+    for (auto it = con.begin(); i < this->size && it != con.end(); ++it)
     {
-        data[i] = elem;
+        data[i] = *it;
         ++i;
     }
 }
@@ -123,23 +140,22 @@ template <TypeForMatrix T>
 Iterator<T> Matrix<T>::begin() const noexcept
 {
     Iterator<T> tmp(*this);
-    tmp.index = 0;
     return tmp;
 }
 
 template <TypeForMatrix T>
 Iterator<T> Matrix<T>::end() const noexcept
 {
-    Iterator<T> tmp(*this);
-    tmp.index = this->size();
+    Iterator<T> tmp(*this, this->size());
+    // tmp.index = this->size();
     return tmp;
 }
 
 template <TypeForMatrix T>
 ReverseIterator<T> Matrix<T>::rbegin() const noexcept
 {
-    ReverseIterator<T> tmp(*this);
-    tmp.index = this->size() - 1;
+    ReverseIterator<T> tmp(*this, this->size() - 1);
+    // tmp.index = this->size() - 1;
     return tmp;
 }
 
@@ -147,7 +163,6 @@ template <TypeForMatrix T>
 ReverseIterator<T> Matrix<T>::rend() const noexcept
 {
     ReverseIterator<T> tmp(*this);
-    tmp.index = 0;
     return tmp;
 }
 
@@ -155,23 +170,22 @@ template <TypeForMatrix T>
 ConstIterator<T> Matrix<T>::cbegin() const noexcept
 {
     ConstIterator<T> tmp(*this);
-    tmp.index = 0;
     return tmp;
 }
 
 template <TypeForMatrix T>
 ConstIterator<T> Matrix<T>::cend() const noexcept
 {
-    ConstIterator<T> tmp(*this);
-    tmp.index = this->size();
+    ConstIterator<T> tmp(*this, this->size());
+    // tmp.index = this->size();
     return tmp;
 }
 
 template <TypeForMatrix T>
 ConstReverseIterator<T> Matrix<T>::crbegin() const noexcept
 {
-    ConstReverseIterator<T> tmp(*this);
-    tmp.index = this->size() - 1;
+    ConstReverseIterator<T> tmp(*this, this->size() - 1);
+    // tmp.index = this->size() - 1;
     return tmp;
 }
 
@@ -179,7 +193,6 @@ template <TypeForMatrix T>
 ConstReverseIterator<T> Matrix<T>::crend() const noexcept
 {
     ConstReverseIterator<T> tmp(*this);
-    tmp.index = 0;
     return tmp;
 }
 
@@ -225,7 +238,7 @@ Matrix<T>& Matrix<T>::operator=(std::initializer_list<std::initializer_list<T>> 
     for (size_t i = 0; elem_i < elems.end(); i++, elem_i++)
     {
         auto elem_j = elem_i->begin();
-        for (size_t j = 0; j < elem_i->end(); j++, elem_j++)
+        for (size_t j = 0; elem_j < elem_i->end(); j++, elem_j++)
             data[i * cols + j] = *elem_j;
     }
 
@@ -386,7 +399,7 @@ T Matrix<T>::get_elem(size_t i) const
 
 #pragma region ExceptionChecks
 template <TypeForMatrix T>
-void Matrix<T>::rows_index_except_check(size_t ind_row, const char *filename, const size_t line) const
+void Matrix<T>::rows_index_exception(size_t ind_row, const char *filename, const size_t line) const
 {
     if (ind_row >= rows)
     {
@@ -396,7 +409,7 @@ void Matrix<T>::rows_index_except_check(size_t ind_row, const char *filename, co
 }
 
 template <TypeForMatrix T>
-void Matrix<T>::col_index_except_check(size_t ind_row, const char *filename, const size_t line) const
+void Matrix<T>::col_index_exception(size_t ind_row, const char *filename, const size_t line) const
 
 {
     if (ind_row >= rows)
@@ -408,7 +421,7 @@ void Matrix<T>::col_index_except_check(size_t ind_row, const char *filename, con
 
 template <TypeForMatrix T>
 template <Convertable<T> U> 
-void Matrix<T>::multiplicating_except_check(const Matrix<U> &mtrx, const char *filename, const size_t line) const
+void Matrix<T>::multiplicating_exception(const Matrix<U> &mtrx, const char *filename, const size_t line) const
 {
     if (!this->is_multiplicating(mtrx))
     {
@@ -419,7 +432,7 @@ void Matrix<T>::multiplicating_except_check(const Matrix<U> &mtrx, const char *f
 
 template <TypeForMatrix T>
 template <Convertable<T> U> 
-void Matrix<T>::same_size_except_check(const Matrix<U> &mtrx, const char *filename, const size_t line) const
+void Matrix<T>::same_size_exception(const Matrix<U> &mtrx, const char *filename, const size_t line) const
 {
     if (!is_same_size(mtrx))
     {
@@ -429,7 +442,7 @@ void Matrix<T>::same_size_except_check(const Matrix<U> &mtrx, const char *filena
 }
 
 template <TypeForMatrix T>
-void Matrix<T>::square_except_check(const char *filename, const size_t line) const
+void Matrix<T>::square_exception(const char *filename, const size_t line) const
 {
     if (!this->is_square())
     {
@@ -439,7 +452,7 @@ void Matrix<T>::square_except_check(const char *filename, const size_t line) con
 }
 
 template <TypeForMatrix T>
-void Matrix<T>::zero_det_except_check(const char *filename, const size_t line) const
+void Matrix<T>::zero_det_exception(const char *filename, const size_t line) const
 {
     if (get_det() - 0 < 0.0005)
     {
@@ -467,7 +480,7 @@ template <TypeForMatrix T>
 template <Convertable<T> U>
 decltype(auto) Matrix<T>::operator+(const Matrix<U> &mtrx) const
 {
-    same_size_except_check(mtrx, __FILE__, __LINE__);
+    same_size_exception(mtrx, __FILE__, __LINE__);
 
     Matrix<T> res(*this);
     for (size_t i = 0; i < this->size(); i++)
@@ -502,48 +515,15 @@ decltype(auto)  Matrix<T>::add(const Matrix<U> &mtrx) const
 
 template <TypeForMatrix T>
 template <Convertable<T> U>
-decltype(auto) Matrix<T>::operator+=(const Matrix<U> &mtrx)
+Matrix<T> &Matrix<T>::operator+=(const Matrix<U> &mtrx)
 {
-    same_size_except_check(mtrx, __FILE__, __LINE__);
+    same_size_exception(mtrx, __FILE__, __LINE__);
 
     for (size_t i = 0; i < this->size(); i++)
         data[i] += mtrx.get_elem(i);
 
     return *this;
 }
-
-// // template <TypeForMatrix T1, TypeForMatrix T2>
-// // template <Convertable<T> U>
-// template <typename T1, typename T2>
-// requires TypesOperation<T1, T2>
-// auto operator+(const Matrix<T1> &m1, const Matrix<T2> &m2) //-> decltype(T1::value_type + T2::value_type)
-// {
-//     m1.same_size_except_check(m2);
-
-//     Matrix<decltype(T1::value_type + T2::value_type)> resm(m1);
-//     for (size_t i = 0; i < m1.rows; ++i)
-//         for (size_t j = 0; j < m1.cols; ++j)
-//             m1.data[i * m1.cols + j] += m2.data[i * m1.cols + j];
-
-//     return resm;
-// }
-
-// template <TypeForMatrix T>
-// Matrix<T> operator+(const Matrix<T> &m1, const Matrix<T> &m2)
-// {
-//     if (m1.rows != m2.rows || m1.cols != m2.cols)
-//     {
-//         time_t curTime = time(NULL);
-//         throw SizeMtrxsForOperationException(ctime(&curTime), __FILE__, __LINE__, typeid(Matrix<T>).name(), __func__);
-//     }
-
-//     Matrix<T> resm(m1);
-//     for (size_t i = 0; i < m1.rows; ++i)
-//         for (size_t j = 0; j < m1.cols; ++j)
-//             resm.data[i * m1.cols + j] += m2.data[i * m1.cols + j];
-
-//     return resm;
-// }
 
 #pragma endregion Addition
 
@@ -552,7 +532,7 @@ template <TypeForMatrix T>
 template <Convertable<T> U>
 decltype(auto)  Matrix<T>::operator-(const Matrix<U> &mtrx) const
 {
-    same_size_except_check(mtrx, __FILE__, __LINE__);
+    same_size_exception(mtrx, __FILE__, __LINE__);
 
     Matrix<T> res(*this);
     for (size_t i = 0; i < this->size(); i++)
@@ -581,9 +561,9 @@ decltype(auto)  Matrix<T>::sub(const Matrix<U> &mtrx) const
 
 template <TypeForMatrix T>
 template <Convertable<T> U>
-decltype(auto) Matrix<T>::operator-=(const Matrix<U> &mtrx)
+Matrix<T> &Matrix<T>::operator-=(const Matrix<U> &mtrx)
 {
-    same_size_except_check(mtrx, __FILE__, __LINE__);
+    same_size_exception(mtrx, __FILE__, __LINE__);
 
     for (size_t i = 0; i < this->size(); i++)
         data[i] -= mtrx.get_elem(i);
@@ -598,7 +578,7 @@ template <TypeForMatrix T>
 template <Convertable<T> U>
 decltype(auto) Matrix<T>::operator*(const Matrix<U> &mtrx) const
 {
-    same_size_except_check(mtrx, __FILE__, __LINE__);
+    same_size_exception(mtrx, __FILE__, __LINE__);
 
     Matrix<T> res(*this);
     for (size_t i = 0; i < this->size(); i++)
@@ -649,9 +629,9 @@ decltype(auto) Matrix<T>::mul(const Matrix<U> &mtrx) const
 
 template <TypeForMatrix T>
 template <Convertable<T> U>
-decltype(auto) Matrix<T>::operator*=(const Matrix<U> &mtrx)
+Matrix<T> &Matrix<T>::operator*=(const Matrix<U> &mtrx)
 {
-    same_size_except_check(mtrx, __FILE__, __LINE__);
+    same_size_exception(mtrx, __FILE__, __LINE__);
 
     for (size_t i = 0; i < this->size(); i++)
         data[i] *= mtrx.get_elem(i);
@@ -666,13 +646,20 @@ template <TypeForMatrix T>
 template <Convertable<T> U>
 decltype(auto) Matrix<T>::operator/(const Matrix<U> &mtrx) const
 {
-    same_size_except_check(mtrx, __FILE__, __LINE__);
+    same_size_exception(mtrx, __FILE__, __LINE__);
 
     Matrix<T> res(*this);
     for (size_t i = 0; i < this->size(); i++)
         res.data[i] /= mtrx.get_elem(i);
 
     return res;
+}
+
+template <TypeForMatrix T>
+template <Convertable<T> U>
+decltype(auto) Matrix<T>::operator%(const Matrix<U> &mtrx) const
+{
+    return *this ^ mtrx.inverted();
 }
 
 template <TypeForMatrix T>
@@ -695,9 +682,9 @@ decltype(auto) Matrix<T>::div(const Matrix<U> &mtrx) const
 
 template <TypeForMatrix T>
 template <Convertable<T> U>
-decltype(auto) Matrix<T>::operator/=(const Matrix<U> &mtrx)
+Matrix<T> &Matrix<T>::operator/=(const Matrix<U> &mtrx)
 {
-    same_size_except_check(mtrx, __FILE__, __LINE__);
+    same_size_exception(mtrx, __FILE__, __LINE__);
 
     for (size_t i = 0; i < this->size(); i++)
         data[i] /= mtrx.get_elem(i);
@@ -710,16 +697,34 @@ decltype(auto) Matrix<T>::operator/=(const Matrix<U> &mtrx)
 #pragma region SpecificOperations
 
 template <TypeForMatrix T>
-void Matrix<T>::make_zero_matrix() noexcept
+Matrix<T> Matrix<T>::make_zero_matrix(const size_t cols, const size_t rows)
+{
+    Matrix<T> res(cols, rows);
+    allocate(rows, cols);
+    res.convert_to_zero_matrix();
+    return res;
+}
+
+template <TypeForMatrix T>
+Matrix<T> Matrix<T>::make_identity_matrix(const size_t size)
+{
+    Matrix<T> res(size, size);
+    res.allocate(size, size);
+    res.convert_to_identity();
+    return res;
+}
+
+template <TypeForMatrix T>
+void Matrix<T>::convert_to_zero_matrix() noexcept
 {
     for (size_t i = 0; i < this->size(); ++i)
         data[i] = 0;
 }
 
 template <TypeForMatrix T>
-void Matrix<T>::make_identity()
+void Matrix<T>::convert_to_identity() noexcept
 {
-    square_except_check(__FILE__, __LINE__);
+    square_exception(__FILE__, __LINE__);
 
     for (size_t i = 0; i < rows; ++i)
         for (size_t j = 0; j < cols; ++j)
@@ -747,7 +752,7 @@ Matrix<T> Matrix<T>::transpose() const
 template <TypeForMatrix T>
 void Matrix<T>::exclude_copy(Matrix<T> &dst, const size_t ex_row, const size_t ex_col) const
 {
-    square_except_check(__FILE__, __LINE__);
+    square_exception(__FILE__, __LINE__);
     // check valid tmp dst
     if (rows != dst.get_rows() + 1 || cols != dst.get_cols() + 1)
     {
@@ -768,9 +773,9 @@ void Matrix<T>::exclude_copy(Matrix<T> &dst, const size_t ex_row, const size_t e
 }
 
 template <TypeForMatrix T>
-decltype(auto) Matrix<T>::get_det() const
+T Matrix<T>::get_det() const
 { 
-    square_except_check(__FILE__, __LINE__);
+    square_exception(__FILE__, __LINE__);
 
     if (rows == 2)
         return data[0] * data[3] - data[2] * data[1];
@@ -783,7 +788,7 @@ decltype(auto) Matrix<T>::get_det() const
     for (size_t i = 0; i < rows; i++)
     {
         exclude_copy(tmp, 0, i);
-        auto minor = tmp.get_det();
+        T minor = tmp.get_det();
 
         if (i % 2 == 1)
             minor = -minor;
@@ -797,8 +802,8 @@ decltype(auto) Matrix<T>::get_det() const
 template <TypeForMatrix T>
 Matrix<T> Matrix<T>::inverted() const
 {
-    square_except_check(__FILE__, __LINE__);
-    zero_det_except_check(__FILE__, __LINE__);
+    square_exception(__FILE__, __LINE__);
+    zero_det_exception(__FILE__, __LINE__);
 
     Matrix<T> res(rows, cols);
     Matrix<T> tmp(rows - 1, cols - 1);

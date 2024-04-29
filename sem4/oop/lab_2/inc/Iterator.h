@@ -12,8 +12,6 @@ class Matrix;
 template <TypeForMatrix T>
 class Iterator: public BaseIterator<T>
 {
-    friend class Matrix<T>;	// УДАЛИИИИИИ
-
 public:
     using iterator_category = random_access_iterator_tag;
 	// using iterator_category = std::bidirectional_iterator_tag;
@@ -25,7 +23,7 @@ public:
 	Iterator() noexcept = default;
 	Iterator(Iterator<T>&& iter) noexcept;
     Iterator(const Iterator<T>& iter) noexcept; // if make it explicit (std::vector<int>(m1.begin(), tt);) wouldn't work
-	explicit Iterator(const Matrix<T> &mtrx) noexcept;
+	explicit Iterator(const Matrix<T> &mtrx, const size_t index = 0) noexcept;
 
 	reference operator*() const;
 	// const T& operator*() const;
@@ -33,10 +31,10 @@ public:
 	pointer operator->() const;
 	// const T* operator->() const;
 
-	reference operator[](const difference_type ind) const;
+	reference operator[](const difference_type ind) const noexcept;
 
-	difference_type distance(const Iterator<T> &other) const;
-	difference_type operator -(const Iterator<T> &other) const;
+	difference_type distance(const Iterator<T> &other) const noexcept;
+	difference_type operator -(const Iterator<T> &other) const noexcept;
 
 	Iterator<T>& operator++() noexcept;
 	Iterator<T> operator++(int) noexcept;
@@ -53,7 +51,7 @@ public:
 	Iterator<T> &operator=(const Iterator<T> &iter);
 	Iterator<T> &operator=(const Iterator<T> &&iter);
 
-	auto operator<=>(const Iterator<T> &other) const {return this->index <=> other.index;};
+	auto operator<=>(const Iterator<T> &other) const noexcept {return this->index <=> other.index;};
 	
 	// T& operator [](size_t ind);
 	// const T& operator [](size_t ind) const;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <limits.h>
 
 #include "MatrixImpl.hpp"
 #include "MaxtrixConcepts.hpp"
@@ -24,7 +25,7 @@ public:
 	ReverseIterator() noexcept = default;
 	ReverseIterator(const ReverseIterator<T>&& iter) noexcept;
     ReverseIterator(const ReverseIterator<T>& iter) noexcept;
-	explicit ReverseIterator(const Matrix<T> &mtrx) noexcept;
+	explicit ReverseIterator(const Matrix<T> &mtrx, const size_t index = SIZE_MAX) noexcept;
 
 	// operator bool() const noexcept;
 
@@ -34,7 +35,7 @@ public:
 	pointer operator->() const;
 	// const T* operator->() const;
 
-	reference operator[](const difference_type ind) const;
+	reference operator[](const difference_type ind) const noexcept;
 
 	difference_type distance(const ReverseIterator<T> &other) const;
 	difference_type operator -(const ReverseIterator<T> &other) const;
@@ -54,7 +55,7 @@ public:
 	ReverseIterator<T> &operator=(const ReverseIterator<T> &iter);
 	ReverseIterator<T> &operator=(const ReverseIterator<T> &&iter);
 
-	auto operator<=>(const ReverseIterator<T> &other) const {return this->index <=> other.index;};
+	auto operator<=>(const ReverseIterator<T> &other) const noexcept {return this->index <=> other.index;};
 	
 	// T& operator [](size_t ind);
 	// const T& operator [](size_t ind) const;
