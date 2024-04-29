@@ -135,6 +135,8 @@ public:
     template <Convertable<T> U> 
     decltype(auto) operator*(const Matrix<U> &mtr) const; 
     template <Convertable<T> U> 
+    decltype(auto) operator^(const Matrix<U> &mtr) const; 
+    template <Convertable<T> U> 
     decltype(auto) operator*(const U &val) const;
     template <Convertable<T> U> 
     decltype(auto) operator*=(const Matrix<U> &mtr);
@@ -218,6 +220,8 @@ private:
     std::shared_ptr<T[]> data;
 };
 
+// template <typename T, typename U>
+// requires TypeForMatrix<T> && Convertable<U, T>
 template <TypeForMatrix T> 
 Matrix<T> operator+(const T &val, const Matrix<T> &mtr);
 

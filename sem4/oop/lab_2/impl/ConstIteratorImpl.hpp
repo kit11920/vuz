@@ -43,21 +43,34 @@ ConstIterator<T>::ConstIterator(const Matrix<T> &mtrx) noexcept
 }
 
 template <TypeForMatrix T>
-const T& ConstIterator<T>::operator*() const
+ConstIterator<T>::reference ConstIterator<T>::operator*() const
 {
 
     this->expride_exept_check(__LINE__);
     this->index_exept_check(__LINE__);
 
-    const shared_ptr<T[]> a = this->pdata.lock();
+    shared_ptr<T[]> a = this->pdata.lock();
     return *(a.get() + this->index);
 };
 
 template <TypeForMatrix T>
-const T* ConstIterator<T>::operator->() const
+ConstIterator<T>::pointer ConstIterator<T>::operator->() const
 {
-    const shared_ptr<T[]> a = this->pdata.lock();
-    return a.get() + this->index;
+    // const shared_ptr<T[]> a = this->pdata.lock();
+    // return a.get() + this->index;
+
+    this->expride_exept_check(__LINE__);
+    this->index_exept_check(__LINE__);
+
+    shared_ptr<T[]> a = this->pdata.lock();
+    return {a->shared_from_this(), a.get() + this->index};
+}
+
+template <TypeForMatrix T>
+ConstIterator<T>::reference ConstIterator<T>::operator[](const ConstIterator<T>::difference_type ind) const
+{
+    shared_ptr<T[]> tmp = this->pdata.lock();
+    return *(tmp.get() + this->index + ind);
 }
 
 template <TypeForMatrix T>
@@ -112,6 +125,12 @@ ConstIterator<T> ConstIterator<T>::operator+(const difference_type ind) const no
 }
 
 template <TypeForMatrix T>
+ConstIterator<T> operator+(const typename ConstIterator<T>::difference_type ind, const ConstIterator<T> &iter) noexcept
+{
+    return iter + ind;
+}
+
+template <TypeForMatrix T>
 ConstIterator<T> ConstIterator<T>::operator-(const difference_type ind) const noexcept
 {
     ConstIterator<T> tmp(*this);
@@ -130,5 +149,23 @@ template <TypeForMatrix T>
 ConstIterator<T> &ConstIterator<T>::operator-=(const difference_type ind) noexcept
 {
     this->index -= ind;
+    return *this;
+}
+
+template <TypeForMatrix T>
+ConstIterator<T> &ConstIterator<T>::operator=(const ConstIterator<T> &iter)
+{
+    this->pdata = iter.pdata;
+    this->size = iter.size;
+    this->index = iter.index;
+    return *this;
+}
+
+template <TypeForMatrix T>
+ConstIterator<T> &ConstIterator<T>::operator=(const ConstIterator<T> &&iter)
+{
+    this->pdata = iter.pdata;
+    this->size = iter.size;
+    this->index = iter.index;
     return *this;
 }

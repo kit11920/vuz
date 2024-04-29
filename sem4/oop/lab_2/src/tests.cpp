@@ -1,5 +1,6 @@
 #include <iostream>
 #include <iterator>
+#include <vector>
 
 #include "IteratorConcepts.hpp"
 #include "MatrixImpl.hpp"
@@ -111,11 +112,11 @@ void f(T&)
     cout << "NOT ITERATOR!" << endl;
 }
 
-template <RandomAccessIterator T>
-void f(T&)
-{
-    cout << "It is RandomAccessIterator in expamples!" << endl;
-}
+// template <RandomAccessIterator T>
+// void f(T&)
+// {
+//     cout << "It is RandomAccessIterator in expamples!" << endl;
+// }
 
 template <std::random_access_iterator T>
 void f(T&)
@@ -123,10 +124,17 @@ void f(T&)
     cout << "It is std::random_access_iterator!" << endl;
 }
 
+// template <InputIterator T>
+// void f(T&)
+// {
+//     cout << "It is InputIterator in expamples!" << endl;
+// }
+
 
 void iterator_test(void)
 {
     Matrix<int> m1 = {{1, 2, 3}, {4, 5, 6}};
+    std::fill(m1.begin(), m1.end(), 3);
     for (size_t i = 0; i < m1.get_rows(); ++i)
     {
         for (size_t j = 0; j < m1.get_cols(); ++j)
@@ -134,6 +142,19 @@ void iterator_test(void)
         cout << endl;
     }
 
+
+    // auto vec = std::vector<int>(m1.begin(), m1.end());
+    // cout << "Vector: ";
+	// for (auto elem : vec)
+	// 	std::cout << elem << " ";
+
+    cout << "\n\n" << endl;
+    ConstReverseIterator crit(m1);
+    f(crit);
+    ReverseIterator rit(m1);
+    f(rit);
+    ConstIterator cit(m1);
+    f(cit);
     Iterator it(m1);
     f(it);
     try

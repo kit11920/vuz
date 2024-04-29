@@ -609,6 +609,22 @@ decltype(auto) Matrix<T>::operator*(const Matrix<U> &mtrx) const
 
 template <TypeForMatrix T>
 template <Convertable<T> U>
+decltype(auto) Matrix<T>::operator^(const Matrix<U> &mtrx) const
+{
+
+    Matrix<T> res(rows, mtrx->cols);
+    for (size_t i = 0; i < rows; ++i)
+        for (size_t j = 0; j < mtrx->cols; ++j) 
+        {
+            res.data[i * cols + j] = 0;
+            for (size_t k = 0; k < cols; ++k) 
+                res.data[i * cols + j] += data[i * cols + k] * mtrx.get_elem(k * cols + j); //A[i][k] * B[k][j];
+        }
+    return res;
+}
+
+template <TypeForMatrix T>
+template <Convertable<T> U>
 decltype(auto) Matrix<T>::operator*(const U &val) const
 {
     Matrix<T> res(*this);

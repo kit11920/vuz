@@ -50,6 +50,7 @@ const T* BaseIterator<T>::operator->() const
     return a.get() + index;
 }
 
+
 template <TypeForMatrix T>
 BaseIterator<T>::operator bool() const noexcept
 {
@@ -115,15 +116,6 @@ BaseIterator<T>::operator bool() const noexcept
 //     index -= ind;
 //     return *this;
 // }
-
-template <TypeForMatrix T>
-const T& BaseIterator<T>::operator [](size_t ind) const
-{
-    const shared_ptr<T[]> tmp = pdata.lock();
-    return *(tmp.get() + this->index + ind);
-}
-
-
 
 
 template <TypeForMatrix T>

@@ -24,11 +24,38 @@ concept EqualityComparable = requires(T a, T b)
     { a != b } -> same_as<bool>;
 };
 
+template<typename _In>
+concept me_indirectly_readable_impl = requires(const _In in)
+{
+    typename iter_value_t<_In>;
+    typename iter_reference_t<_In>;
+    typename iter_rvalue_reference_t<_In>;
+    { *in } -> same_as<iter_reference_t<_In>>;
+    requires same_as<iter_reference_t<const _In>,
+                iter_reference_t<_In>>;
+    requires same_as<iter_rvalue_reference_t<const _In>,
+                iter_rvalue_reference_t<_In>>;
+};
+
+template< class T >
+concept me_movable =
+    std::is_object_v<T> &&
+    std::move_constructible<T> &&
+    std::assignable_from<T&, T> &&
+    std::swappable<T>;
+
 template <typename I>
 concept InputIterator = IteratorCon<I> &&
 requires { typename I::iterator_category; }&&
 EqualityComparable<I>&&
-DerivedFrom<typename I::iterator_category, input_iterator_tag>;
+DerivedFrom<typename I::iterator_category, input_iterator_tag> &&
+derived_from<__detail::__iter_concept<I>, input_iterator_tag> &&
+requires { typename __detail::__iter_concept<I>; } && 
+me_indirectly_readable_impl<I> &&
+indirectly_readable<I> &&
+me_movable<I> &&
+weakly_incrementable<I> &&
+input_or_output_iterator<I>;
 
 # pragma endregion
 
@@ -82,7 +109,23 @@ concept Distance = requires(I it1, I it2)
 template <typename I>
 concept RandomAccessIterator = BidirectionalIterator<I> &&
 RandomAccess<I> && Distance<I> &&
-DerivedFrom<typename I::iterator_category, random_access_iterator_tag>;
+DerivedFrom<typename I::iterator_category, random_access_iterator_tag> &&
+derived_from<__detail::__iter_concept<I>, random_access_iterator_tag> &&
+totally_ordered<I> && requires(const I& __i, const I& __s)
+    {
+      { __s - __i } -> same_as<iter_difference_t<I>>;
+      { __i - __s } -> same_as<iter_difference_t<I>>;
+    } && sized_sentinel_for<I, I> &&
+requires(I __i, const I __j,
+		  const iter_difference_t<I> __n)
+      {
+	{ __i += __n } -> same_as<I&>;
+	{ __j +  __n } -> same_as<I>;
+	{ __n +  __j } -> same_as<I>;
+	{ __i -= __n } -> same_as<I&>;
+	{ __j -  __n } -> same_as<I>;
+	{  __j[__n]  } -> same_as<iter_reference_t<I>>;
+      };
 
 # pragma endregion
 

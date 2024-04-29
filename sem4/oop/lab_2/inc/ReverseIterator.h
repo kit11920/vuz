@@ -18,22 +18,23 @@ public:
     using iterator_category = random_access_iterator_tag;
     using value_type = T;
     using difference_type = ptrdiff_t;
-    using pointer = T*;
-    using reference = T&;
-
+    using pointer = shared_ptr<T[]>; //T*; // shared_ptr специальный конструктор котрый будеь держать весь класс подвязывает к др указателю
+    using reference = T&; 
+	
 	ReverseIterator() noexcept = default;
 	ReverseIterator(const ReverseIterator<T>&& iter) noexcept;
-    explicit ReverseIterator(const ReverseIterator<T>& iter) noexcept;
+    ReverseIterator(const ReverseIterator<T>& iter) noexcept;
 	explicit ReverseIterator(const Matrix<T> &mtrx) noexcept;
 
 	// operator bool() const noexcept;
-	ReverseIterator<T>& operator=(const ReverseIterator<T>& iter) noexcept;
 
-	reference operator*();
+	reference operator*() const;
 	// const T& operator*() const;
 
-	T* operator->();
+	pointer operator->() const;
 	// const T* operator->() const;
+
+	reference operator[](const difference_type ind) const;
 
 	difference_type distance(const ReverseIterator<T> &other) const;
 	difference_type operator -(const ReverseIterator<T> &other) const;
@@ -50,20 +51,14 @@ public:
 	ReverseIterator<T> &operator+=(const difference_type ind) noexcept;
 	ReverseIterator<T> &operator-=(const difference_type ind) noexcept;
 
-	// auto operator<=>(const ReverseIterator<T> &other) const {return this->index <=> other.index;};
-	// // bool operator==(const ReverseIterator<T> &other) const {return this->index == other.index;};
+	ReverseIterator<T> &operator=(const ReverseIterator<T> &iter);
+	ReverseIterator<T> &operator=(const ReverseIterator<T> &&iter);
+
+	auto operator<=>(const ReverseIterator<T> &other) const {return this->index <=> other.index;};
 	
-	T& operator [](size_t ind);
+	// T& operator [](size_t ind);
 	// const T& operator [](size_t ind) const;
-
-	
-
-// protected:
-//     void expride_exept_check(const size_t line) const;
-//     void index_exept_check(const size_t line) const;
-
-// private:
-// 	weak_ptr<T[]> pdata;
 };
 
-
+template <TypeForMatrix T>
+ReverseIterator<T> operator+(const typename ReverseIterator<T>::difference_type ind, const ReverseIterator<T> &iter) noexcept;

@@ -26,6 +26,12 @@ concept TypeForMatrix = requires(T a, T b)
 template <typename From, typename To>
 concept Convertable = convertible_to<From, To>; // && TypeForMatrix<To>;
 
+template <typename From, typename To>
+concept Assignable = requires(From fm, To t)
+{
+    t = fm;
+};
+
 template <typename C>  
 concept Container = requires(C con)
 {
@@ -37,17 +43,14 @@ concept Container = requires(C con)
     { con.size() } noexcept -> same_as<typename C::size_type>;
     { con.end() } noexcept -> same_as<typename C::iterator>;
     { con.begin() } noexcept -> same_as<typename C::iterator>;
-    { con.rend() } noexcept -> same_as<typename C::reverse_iterator>;
-    { con.rbegin() } noexcept -> same_as<typename C::reverse_iterator>;
-    { con.cend() } noexcept -> same_as<typename C::const_iterator>;
-    { con.cbegin() } noexcept -> same_as<typename C::const_iterator>;
+    // { con.rend() } noexcept -> same_as<typename C::reverse_iterator>;
+    // { con.rbegin() } noexcept -> same_as<typename C::reverse_iterator>;
+    // { con.cend() } noexcept -> same_as<typename C::const_iterator>;
+    // { con.cbegin() } noexcept -> same_as<typename C::const_iterator>;
 };
 
 template <typename Con, typename T>
 concept ContainerMatrix = Container<Con> && 
-                        Convertable<typename Con::value_type, T> && 
-                        RandomAccessIterator<typename Con::iterator>;
+                        Convertable<typename Con::value_type, T> &&
+                        Assignable<typename Con::value_type, T>; // && RandomAccessIterator<typename Con::iterator>;
 
-// template <typename Con, typename T>
-// concept ContainerMatrix = Convertable<typename Con::value_type, T> && 
-//                         RandomAccessIterator<typename Con::iterator>;

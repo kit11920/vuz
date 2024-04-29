@@ -4,39 +4,39 @@
 
 #include "MatrixImpl.hpp"
 #include "MaxtrixConcepts.hpp"
-// #include "BaseIterator.h"
 #include "BaseIteratorImpl.hpp"
 
 template <TypeForMatrix T>
 class Matrix;
 
 template <TypeForMatrix T>
-class Iterator: public BaseIterator<T> // BaseIterator
+class Iterator: public BaseIterator<T>
 {
-    friend class Matrix<T>;
+    friend class Matrix<T>;	// УДАЛИИИИИИ
 
 public:
     using iterator_category = random_access_iterator_tag;
+	// using iterator_category = std::bidirectional_iterator_tag;
     using value_type = T;
-    using difference_type = ptrdiff_t;
-    using pointer = T*;
-    using reference = T&;
+    using difference_type = std::ptrdiff_t;
+    using pointer = T*; //shared_ptr<T[]>;  // shared_ptr специальный конструктор котрый будеь держать весь класс подвязывает к др указателю
+    using reference = T&; // const
 
 	Iterator() noexcept = default;
 	Iterator(Iterator<T>&& iter) noexcept;
-    explicit Iterator(const Iterator<T>& iter) noexcept;
+    Iterator(const Iterator<T>& iter) noexcept; // if make it explicit (std::vector<int>(m1.begin(), tt);) wouldn't work
 	explicit Iterator(const Matrix<T> &mtrx) noexcept;
 
-	// operator bool() const noexcept;
-
-	T& operator*();
+	reference operator*() const;
 	// const T& operator*() const;
 
-	T* operator->();
+	pointer operator->() const;
 	// const T* operator->() const;
 
-	difference_type distance(const Iterator<T> &other);
-	difference_type operator -(const Iterator<T> &other);
+	reference operator[](const difference_type ind) const;
+
+	difference_type distance(const Iterator<T> &other) const;
+	difference_type operator -(const Iterator<T> &other) const;
 
 	Iterator<T>& operator++() noexcept;
 	Iterator<T> operator++(int) noexcept;
@@ -50,20 +50,17 @@ public:
 	Iterator<T> &operator+=(const difference_type ind) noexcept;
 	Iterator<T> &operator-=(const difference_type ind) noexcept;
 
-	// auto operator<=>(const Iterator<T> &other) const {return this->index <=> other.index;};
-	// // bool operator==(const Iterator<T> &other) const = default;
+	Iterator<T> &operator=(const Iterator<T> &iter);
+	Iterator<T> &operator=(const Iterator<T> &&iter);
+
+	auto operator<=>(const Iterator<T> &other) const {return this->index <=> other.index;};
 	
-	T& operator [](size_t ind);
+	// T& operator [](size_t ind);
 	// const T& operator [](size_t ind) const;
-
-	
-
-// protected:
-    // void expride_exept_check(const size_t line) const;
-    // void index_exept_check(const size_t line) const;
-
-// private:
-// 	weak_ptr<T[]> pdata;
 };
+
+
+template <TypeForMatrix T>
+Iterator<T> operator+(const typename Iterator<T>::difference_type ind, const Iterator<T> &iter) noexcept;
 
 

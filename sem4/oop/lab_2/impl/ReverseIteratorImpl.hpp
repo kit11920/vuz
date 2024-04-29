@@ -35,15 +35,14 @@ ReverseIterator<T>::ReverseIterator(const Matrix<T> &mtrx) noexcept
 }
 
 template <TypeForMatrix T>
-ReverseIterator<T>::reference ReverseIterator<T>::operator*()
+ReverseIterator<T>::reference ReverseIterator<T>::operator*() const
 {
     this->expride_exept_check(__LINE__);
     this->index_exept_check(__LINE__);
 
-
     shared_ptr<T[]> a = this->pdata.lock();
     return *(a.get() + this->index);
-};
+}
 
 // template <TypeForMatrix T>
 // const T& ReverseIterator<T>::operator*() const
@@ -57,10 +56,22 @@ ReverseIterator<T>::reference ReverseIterator<T>::operator*()
 // };
 
 template <TypeForMatrix T>
-T* ReverseIterator<T>::operator->()
+ReverseIterator<T>::pointer ReverseIterator<T>::operator->() const
 {
+    // shared_ptr<T[]> a = this->pdata.lock();
+    // return a.get() + this->index;
+    this->expride_exept_check(__LINE__);
+    this->index_exept_check(__LINE__);
+
     shared_ptr<T[]> a = this->pdata.lock();
-    return a.get() + this->index;
+    return {a->shared_from_this(), a.get() + this->index};
+}
+
+template <TypeForMatrix T>
+ReverseIterator<T>::reference ReverseIterator<T>::operator[](const ReverseIterator<T>::difference_type ind) const
+{
+    shared_ptr<T[]> tmp = this->pdata.lock();
+    return *(tmp.get() + this->index + ind);
 }
 
 // template <TypeForMatrix T>
@@ -75,14 +86,6 @@ T* ReverseIterator<T>::operator->()
 // {
 //     return !pdata.expired() && index < size;
 // }
-
-template <TypeForMatrix T>
-ReverseIterator<T>& ReverseIterator<T>::operator=(const ReverseIterator<T>& iter) noexcept
-{
-    this->pdata.reset(iter.pdata);
-    this->size = iter.size;
-    this->index = iter.index;
-}
 
 template <TypeForMatrix T>
 ReverseIterator<T>::difference_type ReverseIterator<T>::operator -(const ReverseIterator<T> &other) const
@@ -135,6 +138,12 @@ ReverseIterator<T> ReverseIterator<T>::operator+(const difference_type ind) cons
 }
 
 template <TypeForMatrix T>
+ReverseIterator<T> operator+(const typename ReverseIterator<T>::difference_type ind, const ReverseIterator<T> &iter) noexcept
+{
+    return iter + ind;
+}
+
+template <TypeForMatrix T>
 ReverseIterator<T> ReverseIterator<T>::operator-(const difference_type ind) const noexcept
 {
     ReverseIterator<T> tmp(*this);
@@ -156,19 +165,23 @@ ReverseIterator<T> &ReverseIterator<T>::operator-=(const difference_type ind) no
     return *this;
 }
 
-// template <TypeForMatrix T>
-// const T& ReverseIterator<T>::operator [](size_t ind) const
-// {
-//     const shared_ptr<T[]> tmp = pdata.lock();
-//     return *(tmp.get() + this->index - ind);
-// }
+template <TypeForMatrix T>
+ReverseIterator<T> &ReverseIterator<T>::operator=(const ReverseIterator<T> &iter)
+{
+    this->pdata = iter.pdata;
+    this->size = iter.size;
+    this->index = iter.index;
+    return *this;
+}
 
-// template <TypeForMatrix T>
-// T& ReverseIterator<T>::operator [](size_t ind)
-// {
-//     shared_ptr<T[]> tmp = pdata.lock();
-//     return *(tmp.get() + this->index - ind);
-// }
+template <TypeForMatrix T>
+ReverseIterator<T> &ReverseIterator<T>::operator=(const ReverseIterator<T> &&iter)
+{
+    this->pdata = iter.pdata;
+    this->size = iter.size;
+    this->index = iter.index;
+    return *this;
+}
 
 
 
